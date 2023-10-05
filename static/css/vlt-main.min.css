@@ -901,7 +901,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-ms-transform:rotate(180deg);
 	transform:rotate(180deg)
 }
-@media(min-width:1399px) {
+@media(min-width:1400px) {
 	.vlt-menu-burger.js-offcanvas-menu-open {
 	display:none
 }
