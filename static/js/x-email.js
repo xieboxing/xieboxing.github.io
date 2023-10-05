@@ -1,1 +1,59 @@
-eval(function(p,a,c,k,e,r){e=function(c){return c.toString(36)};if('0'.replace(0,e)==0){while(c--)r[e(c)]=k[c];k=[function(e){return r[e]||e}];e=function(){return'[0-46-9a-t]'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(8(){$(".0.0-9").1();$(".0.0-a").1();$(".0.0-3").1();i.init(\'jWHShUevKXcDVWnYM\')})();$("#messageSubmit").on("click",8(j){j.preventDefault();4 b=$("#b").6();4 c=$("#c").6();4 7=$("#7").6();k(b===""||c===""||7===""){$(".0.0-a").1();$(".0.0-3").1();$(".0.0-9").d();f}4 g=new Date().getTime();4 l=5;4 m=5*60*1000;let 2=n.parse(o.getItem("x-2"))||[];2=2.filter(8(p){f g-p<=m});k(2.length<l){2.push(g);o.setItem("x-2",n.stringify(2))}else{$(".0.0-3").h(`q r s t!Error:Request limit exceeded.Please wait for 5 minutes.`);$(".0.0-a").1();$(".0.0-3").d();$(".0.0-9").1();f}i.send("service_g5y52t9","template_ghpgb6e",{user_name:b,user_email:c,7:7}).then(8(response){$("#b").6("");$("#c").6("");$("#7").6("");$(".0.0-3").1();$(".0.0-9").1();$(".0.0-a").d()},8(e){$(".0.0-3").h("q r s t! "+(e&&e.status==400&&e.h)||"");$(".0.0-a").1();$(".0.0-9").1();$(".0.0-3").d()})});',[],30,'alert|hide|requestHistory|danger|const||val|message|function|warning|success|name|email|show|error|return|currentTime|text|emailjs|event|if|requestLimit|interval|JSON|localStorage|requestTime|Sorry|something|went|wrong'.split('|'),0,{}))
+(function() {
+		    $(".alert.alert-warning").hide();
+		    $(".alert.alert-success").hide();
+		    $(".alert.alert-danger").hide();
+            emailjs.init('jWHShUevKXcDVWnYM');
+        })();
+
+		 $("#messageSubmit").on("click", function(event) {
+			event.preventDefault();
+		    const name = $("#name").val();
+		    const email = $("#email").val();
+		    const message = $("#message").val();
+
+			if (name === "" || email === "" || message === "") {
+		    	$(".alert.alert-success").hide();
+		    	$(".alert.alert-danger").hide();
+		    	$(".alert.alert-warning").show();
+		    	return;
+		    }
+
+		 	const currentTime = new Date().getTime();
+            const requestLimit = 5;
+            const interval = 5 * 60 * 1000;
+
+            let requestHistory = JSON.parse(localStorage.getItem("x-requestHistory")) || [];
+            requestHistory = requestHistory.filter(function(requestTime) {
+                return currentTime - requestTime <= interval;
+            });
+
+            if (requestHistory.length < requestLimit) {
+                requestHistory.push(currentTime);
+                localStorage.setItem("x-requestHistory", JSON.stringify(requestHistory));
+            } else {
+                $(".alert.alert-danger").text(`Sorry something went wrong! Error:Request limit exceeded. Please wait for 5 minutes.`);
+		        $(".alert.alert-success").hide();
+		        $(".alert.alert-danger").show();
+		        $(".alert.alert-warning").hide();
+                return;
+            }
+
+		    emailjs.send("service_g5y52t9", "template_ghpgb6e", {
+		      user_name: name,
+		      user_email: email,
+		      message: message
+		    })
+		    .then(function(response) {
+			  $("#name").val("");
+	          $("#email").val("");
+	          $("#message").val("");
+		      $(".alert.alert-danger").hide();
+		      $(".alert.alert-warning").hide();
+		  	  $(".alert.alert-success").show();
+		    }, function(error) {
+		      $(".alert.alert-danger").text("Sorry something went wrong! "+(error&&error.status==400&&error.text)||"");
+		      $(".alert.alert-success").hide();
+		      $(".alert.alert-warning").hide();
+		      $(".alert.alert-danger").show();
+		    });
+		  });
