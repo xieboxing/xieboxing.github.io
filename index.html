@@ -279,7 +279,7 @@
 						<div class="vlt-section__content">
 							<div class="vlt-section__projects-background">
 								<img class="is-active" src="static/picture/project-01.jpg" alt="" loading="lazy">
-								<img src="static/picture/project-02.jpg" alt="" loading="lazy">
+								<img id="p2" data-src="static/picture/project-02.jpg" alt="" loading="lazy">
 								<img src="static/picture/project-01.jpg" alt="" loading="lazy">
 							</div>
 							<div class="container">
@@ -793,7 +793,7 @@
 											</p>
 											<p>
 												<a class="tel" href="" style="display: block;">微信:</a>
-												<img src="static/picture/wechat.png" alt="static/picture/wechat.png" style="height: 200px; width: 200px;">
+												<img id="wechatPng" data-src="static/picture/wechat.png" alt="static/picture/wechat.png" style="height: 200px; width: 200px;display:none;">
 											</p>
 
 											<div class="vlt-gap-40"></div>
@@ -834,9 +834,9 @@
 												<div class="vlt-form-group">
 													<textarea name="message" id="message" rows="3" placeholder="消息留言"></textarea>
 												</div>
-												<div class="alert alert-warning">请您填写所有信息 </div>
-												<div class="alert alert-success">感谢您的留言！我会尽快与您联系。</div>
-												<div class="alert alert-danger">Sorry something went wrong!</div>
+												<div class="alert alert-warning" style="display: none;">请您填写所有信息 </div>
+												<div class="alert alert-success" style="display: none;">感谢您的留言！我会尽快与您联系。</div>
+												<div class="alert alert-danger" style="display: none;">Sorry something went wrong!</div>
 
 												<!-- <div class="message success">Your message is successfully sent...</div>
 												<div class="message danger">Sorry something went wrong!</div> -->
@@ -867,18 +867,49 @@
 				<a href="#">Ger</a>
 			</div> -->
 		</footer>
+
 		<!-- <script src="static/js/jquery-3.5.1.min.js"></script> -->
-
-
 		<script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.5.1/jquery.min.js"></script>
+		
 		<!-- <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/4.5.3/js/bootstrap.min.js"></script> -->
-		<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> -->
-
 
 		<script src="static/js/vlt-plugins.min.js"></script>
 		<script src="static/js/vlt-helpers.js"></script>
 		<script src="static/js/vlt-controllers.min.js"></script>
-				<script type="text/javascript" src="static/js/email.min.js"></script>
-		<script src="static/js/x-email.js"></script>
+
+		<!-- <script type="text/javascript" src="static/js/email.min.js" defer></script> -->
+		<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> -->
+		<!-- <script src="static/js/x-email.js" defer></script> -->
+
+		<script>
+			var scripts = [
+			'static/js/email.min.js',
+			'static/js/x-email.js'
+			];
+
+			function loadScript(index) {
+			if (index >= scripts.length) {
+				return;
+			}
+
+				var script = document.createElement('script');
+				script.src = scripts[index];
+				script.onload = function() {
+					loadScript(index + 1);
+				};
+				document.body.appendChild(script);
+			}
+
+			window.onload = function() {
+				setTimeout(function() {
+					var wechatImg = $('#wechatPng');
+					wechatImg.attr('src', wechatImg.attr('data-src')).on('load', function() {wechatImg.show();});
+					var p2Img = $('#p2');
+					p2Img.attr('src', p2Img.attr('data-src')).on('load', function() {p2Img.show();});
+
+					loadScript(0);
+				}, 2500);
+			};
+		</script>
 	</body>
 </html>
