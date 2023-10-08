@@ -9,7 +9,7 @@
 		<link rel="icon" type="image/svg" href="static/picture/avatar_small.jpg">
 		<!-- <link rel="stylesheet" href="static/css/bootstrap.min.css"> -->
 		<link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/4.5.3/css/bootstrap.min.css">
-		<link rel="stylesheet" href="static/css/style.css">
+		<!-- <link rel="stylesheet" href="static/css/style.css"> -->
 		<link rel="stylesheet" href="static/css/LineIcons.css">
 		<link rel="stylesheet" href="static/css/vlt-plugins.min.css">
 		<link rel="stylesheet" href="static/css/vlt-main.min.css">
@@ -868,48 +868,21 @@
 			</div> -->
 		</footer>
 
+		<!-- <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/4.5.3/js/bootstrap.min.js"></script> -->
 		<!-- <script src="static/js/jquery-3.5.1.min.js"></script> -->
 		<script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.5.1/jquery.min.js"></script>
 		
-		<!-- <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/bootstrap/4.5.3/js/bootstrap.min.js"></script> -->
 
 		<script src="static/js/vlt-plugins.min.js"></script>
 		<script src="static/js/vlt-helpers.js"></script>
 		<script src="static/js/vlt-controllers.min.js"></script>
 
-		<!-- <script type="text/javascript" src="static/js/email.min.js" defer></script> -->
 		<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script> -->
-		<!-- <script src="static/js/x-email.js" defer></script> -->
+		<!-- <script type="text/javascript" src="static/js/email.min.js"></script> -->
+		<!-- <script src="static/js/x-email.js"></script> -->
 
 		<script>
-			var scripts = [
-			'static/js/email.min.js',
-			'static/js/x-email.js'
-			];
-
-			function loadScript(index) {
-			if (index >= scripts.length) {
-				return;
-			}
-
-				var script = document.createElement('script');
-				script.src = scripts[index];
-				script.onload = function() {
-					loadScript(index + 1);
-				};
-				document.body.appendChild(script);
-			}
-
-			window.onload = function() {
-				setTimeout(function() {
-					var wechatImg = $('#wechatPng');
-					wechatImg.attr('src', wechatImg.attr('data-src')).on('load', function() {wechatImg.show();});
-					var p2Img = $('#p2');
-					p2Img.attr('src', p2Img.attr('data-src')).on('load', function() {p2Img.show();});
-
-					loadScript(0);
-				}, 2500);
-			};
+		var scripts=['static/js/email.min.js','static/js/x-email.js'];function loadScript(index){if(index>=scripts.length){return}var script=document.createElement('script');script.src=scripts[index];script.onload=function(){loadScript(index+1)};document.body.appendChild(script)}window.onload=function(){setTimeout(function(){var wechatImg=$('#wechatPng');wechatImg.attr('src',wechatImg.attr('data-src')).on('load',function(){wechatImg.show()});var p2Img=$('#p2');p2Img.attr('src',p2Img.attr('data-src')).on('load',function(){p2Img.show()});loadScript(0)},1500)};
 		</script>
 	</body>
 </html>
