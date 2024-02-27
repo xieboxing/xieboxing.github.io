@@ -50,7 +50,6 @@
                     let columnNumber = 0;
                     line++;
                     if(state==1){
-                        // console.log(item[l1-1], item[l2-1]);
                         let {common,unique1,unique2} = compareStrings(item[l1-1]&&item[l1-1].toString()||"", item[l2-1]&&item[l2-1].toString()||"");
                         result.push([line,item[l1-1],item[l2-1],common.join(', '),unique1.join(', '),unique2.join(', ')]);
                         
@@ -66,7 +65,7 @@
 
                             if(l1>0&&l2>0){
                                 state = 1;
-                                result[0].push(...["相同的元素","规格描述-独有的元素","绿联规格描述-独有的元素"]);
+                                result[0].push(...["相同的元素","绿联规格描述-独有的元素","规格描述-独有的元素"]);
                                 continue;
                             }
                         }else if(item2=="绿联规格描述"){
@@ -76,14 +75,13 @@
 
                             if(l1>0&&l2>0){
                                 state = 1;
-                                result[0].push(...["相同的元素","绿联规格描述-独有的元素","规格描述-独有的元素"]);
+                                result[0].push(...["相同的元素","规格描述-独有的元素","绿联规格描述-独有的元素"]);
                                 break;
                             }
                         }
                         
                     }
                 }
-                // console.log({state,l1,l2});
                 console.log(array);
                 console.log(result);
                 createTable(result);
