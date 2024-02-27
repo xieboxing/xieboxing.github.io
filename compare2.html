@@ -25,83 +25,86 @@
     
 </head>
 <body>
-    <input type="file" id="input-excel" accept=".xls,.xlsx" />
+    <textarea id="paste-area" placeholder="在此处粘贴的Excel数据" rows="20" cols="10000"></textarea>
+    <button id="process-data">处理数据</button>
     <button id="download-result" disabled>下载结果</button>
     <table id="table"></table>
 
     <script>
         let result = [];
-        document.getElementById('input-excel').addEventListener('change', handleFile, false);
+        document.getElementById('process-data').addEventListener('click', handleData, false);
         document.getElementById('download-result').addEventListener('click', downloadResult, false);
 
-        function handleFile(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheetName = workbook.SheetNames[0];
-                const sheet = workbook.Sheets[sheetName];
-                const array = sheetToArray(sheet);
+        function handleData() {
+            const data = document.getElementById('paste-area').value;
+            const workbook = XLSX.read(data, { type: 'string', raw: true });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const array = sheetToArray(sheet);
 
-                let state = 0;
-                let l1 = 0;
-                let l2 = 0;
-                let line = 0;
+            let state = 0;
+            let l1 = 0;
+            let l2 = 0;
+            let line = 0;
 
-                
-                outerLoop: for (const item of array) {
-                    let columnNumber = 0;
-                    line++;
-                    if(state==1){
-                        let {common,unique1,unique2} = compareStrings(item[l1-1]&&item[l1-1].toString()||"", item[l2-1]&&item[l2-1].toString()||"");
-                        result.push([line,item[l1-1],item[l2-1],common.join(', '),unique1.join(', '),unique2.join(', ')]);
-                        
-                        continue;
-                    }
 
-                    for (const item2 of item) {
-                        columnNumber++;
-                        if(item2=="规格描述"){
-                            l1=columnNumber;
-                            if(result.length==0) result.push(["Excel行数"])
-                            result[0].push("规格描述");
+            outerLoop: for (const item of array) {
+                let columnNumber = 0;
+                line++;
+                if(state==1){
+                    let {common,unique1,unique2} = compareStrings(item[l1-1]&&item[l1-1].toString()||"", item[l2-1]&&item[l2-1].toString()||"");
+                    result.push([line,item[l1-1],item[l2-1],common.join(', '),unique1.join(', '),unique2.join(', ')]);
 
-                            if(l1>0&&l2>0){
-                                state = 1;
-                                result[0].push(...["相同的元素","绿联描述-独有的元素","规格描述-独有的元素"]);
-                                continue;
-                            }
-                        }else if(item2=="绿联描述"){
-                            l2=columnNumber;
-                            if(result.length==0) result.push(["Excel行数"])
-                                result[0].push("绿联描述");
-
-                            if(l1>0&&l2>0){
-                                state = 1;
-                                result[0].push(...["相同的元素","规格描述-独有的元素","绿联描述-独有的元素"]);
-                                break;
-                            }
-                        }
-                        
-                    }
+                    continue;
                 }
-                console.log(array);
-                console.log(result);
-                createTable(result);
-                document.getElementById('download-result').disabled = false;
+
+                for (const item2 of item) {
+                    columnNumber++;
+                    if(item2=="规格描述"){
+                        l1=columnNumber;
+                        if(result.length==0) result.push(["Excel行数"])
+                        result[0].push("规格描述");
+
+                        if(l1>0&&l2>0){
+                            state = 1;
+                            result[0].push(...["相同的元素","绿联描述-独有的元素","规格描述-独有的元素"]);
+                            continue;
+                        }
+                    }else if(item2=="绿联描述"){
+                        l2=columnNumber;
+                        if(result.length==0) result.push(["Excel行数"])
+                            result[0].push("绿联描述");
+
+                        if(l1>0&&l2>0){
+                            state = 1;
+                            result[0].push(...["相同的元素","规格描述-独有的元素","绿联描述-独有的元素"]);
+                            break;
+                        }
+                    }
+
+                }
             }
-            reader.readAsArrayBuffer(file);
+            console.log(array);
+            console.log(result);
+            createTable(result);
+            document.getElementById('download-result').disabled = false;
         }
 
         function downloadResult() {
-            const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(result);
-            XLSX.utils.book_append_sheet(wb, ws, "Result");
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            saveAs(new Blob([wbout], { type: 'application/octet-stream' }), 'result.xlsx');
-        }
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Result');
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
 
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+
+            saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'result.xlsx');
+        }
 
         function sheetToArray(sheet) {
             const ref = sheet['!ref'];
@@ -171,7 +174,6 @@
                 unique2: Array.from(unique2)
             };
         }
-    
     </script>
 </body>
 </html>
