@@ -134,7 +134,7 @@
 
         function splitString(s) {
             // 使用正则表达式匹配可能的元素
-            const regex = /[^\s，,()\\/\+（）]+/g;
+            const regex = /[^\s，,()\\/\+（）:;；：]+/g;
             let elements = s.match(regex);
             return elements || [];
         }
