@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google reCAPTCHA 示例</title>
+  <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=zh-CN" async defer></script>
+</head>
+<body>
+  <h1>Google reCAPTCHA 示例</h1>
+  <div id="recaptcha-container"></div>
+  <button id="submitBtn" type="submit">提交</button>
+
+  <script>
+    var onloadCallback = function() {
+      console.log("grecaptcha is ready!");
+      grecaptcha.render('recaptcha-container', {
+        'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
+        'callback': function(token) {
+          // Add your logic to submit to your backend server here.
+          console.log('Token:', token);
+        }
+      });
+
+      document.getElementById("submitBtn").addEventListener("click", function() {
+        // Trigger reCAPTCHA validation
+        grecaptcha.execute();
+      });
+    };
+  </script>
+</body>
+</html>
