@@ -15,20 +15,18 @@
   <script>
     var onloadCallback = function() {
       console.log("grecaptcha is ready!");
-      document.getElementById("submitBtn").addEventListener("click", function() {
-        grecaptcha.render('recaptcha-container', {
-          'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
-          'callback': function(token) {
-            // Add your logic to submit to your backend server here.
-            console.log('Token:', token);
-            verifyRecaptchaToken(token);
-          }
-        });
+      grecaptcha.render('recaptcha-container', {
+        'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
+        'callback': function(token) {
+          // Add your logic to submit to your backend server here.
+          console.log('Token:', token);
+          verifyRecaptchaToken(token);
+        }
       });
     };
 
     function verifyRecaptchaToken(token) {
-      const secretKey = '6LeKPSIqAAAAAKHHcSoeNTwwGJPMgAOs8DiL8FYk'; // 替换为您的 reCAPTCHA 密钥
+      const secretKey = '6LeFQyIqAAAAAK7NnPw-8YDPiPATmZzgKrWVrHRc'; // 替换为您的 reCAPTCHA 密钥
       const apiUrl = 'https://www.google.com/recaptcha/api/siteverify';
       const callbackName = 'handleRecaptchaResponse';
 
