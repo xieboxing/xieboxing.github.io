@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Google reCAPTCHA 示例</title>
   <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=zh-CN" async defer></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- 
 中文繁体（繁體中文）：hl=zh-TW
@@ -41,7 +42,8 @@
   function verifyRecaptchaToken(token) {
     const secretKey = '6LeFQyIqAAAAAK7NnPw-8YDPiPATmZzgKrWVrHRc'; // 替换为您的 reCAPTCHA 密钥
     const apiUrl = 'https://www.google.com/recaptcha/api/siteverify';
-console.log('2**************************************************************');
+    console.log('2**************************************************************');
+
     $.ajax({
       url: apiUrl,
       method: 'POST',
