@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Google reCAPTCHA 示例</title>
   <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=zh-CN" async defer></script>
+
+<!-- 
+中文繁体（繁體中文）：hl=zh-TW
+韩语（한국어）：hl=ko
+英文（English）：hl=en
+旁遮普语（ਪੰਜਾਬੀ）：hl=pa
+印尼语（Bahasa Indonesia）：hl=id 
+-->
+
 </head>
 <body>
   <h1>Google reCAPTCHA 示例</h1>
@@ -14,19 +23,52 @@
   <script>
     var onloadCallback = function() {
       console.log("grecaptcha is ready!");
-      grecaptcha.render('recaptcha-container', {
-        'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
-        'callback': function(token) {
-          // Add your logic to submit to your backend server here.
-          console.log('Token:', token);
-        }
-      });
-
       document.getElementById("submitBtn").addEventListener("click", function() {
-        // Trigger reCAPTCHA validation
-        grecaptcha.execute();
+        grecaptcha.render('recaptcha-container', {
+          'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
+          'callback': function(token) {
+            // Add your logic to submit to your backend server here.
+            console.log('Token:', token);
+            console.log('1**************************************************************');
+            verifyRecaptchaToken(token);
+
+            
+          }
+        });
       });
     };
+
+  function verifyRecaptchaToken(token) {
+    const secretKey = '6LeFQyIqAAAAAK7NnPw-8YDPiPATmZzgKrWVrHRc'; // 替换为您的 reCAPTCHA 密钥
+    const apiUrl = 'https://www.google.com/recaptcha/api/siteverify';
+console.log('2**************************************************************');
+    $.ajax({
+      url: apiUrl,
+      method: 'POST',
+      data: {
+        secret: secretKey,
+        response: token
+        // 如果需要，可以添加用户的 IP 地址
+        // remoteip: 'USER_IP_ADDRESS'
+      },
+      success: function(data) {
+        console.log('3**************************************************************');
+        console.log('reCAPTCHA API response:', data);
+        if (data.success) {
+          // reCAPTCHA 验证成功，您可以在此处添加提交表单的逻辑
+          console.log('reCAPTCHA 验证成功');
+        } else {
+          // reCAPTCHA 验证失败，您可以在此处添加相应的处理逻辑
+          console.log('reCAPTCHA 验证失败');
+        }
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log('4**************************************************************');
+        console.error('Error during reCAPTCHA verification:', errorThrown);
+      }
+    });
+  }
   </script>
+
 </body>
 </html>
