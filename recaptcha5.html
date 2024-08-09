@@ -30,6 +30,7 @@
       const apiUrl = 'https://www.google.com/recaptcha/api/siteverify';
       const callbackName = 'handleRecaptchaResponse';
 
+      console.log('********************************1');
       window[callbackName] = function(data) {
         console.log('reCAPTCHA API response:', data);
         if (data.success) {
@@ -40,10 +41,11 @@
           console.log('reCAPTCHA 验证失败');
         }
       };
-
+      console.log('********************************2');
       const script = document.createElement('script');
       script.src = `${apiUrl}?secret=${secretKey}&response=${token}&callback=${callbackName}`;
       document.body.appendChild(script);
+      console.log('********************************3');
     }
   </script>
 
