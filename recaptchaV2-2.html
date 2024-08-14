@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reCAPTCHA v2 and Google Sign-In Example</title>
+  <script src="https://www.google.com/recaptcha/api.js?render=explicit&onload=onRecaptchaLoad" async defer></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+  <h1>reCAPTCHA v2 and Google Sign-In Example</h1>
+  <div id="recaptcha-container"></div>
+  <button id="customSignInBtn">Sign In With Google</button>
+
+  <script>
+    var recaptchaWidgetId;
+
+    // 初始化 reCAPTCHA v2
+    function onRecaptchaLoad() {
+      recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+        'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
+        'callback': onRecaptchaSuccess
+      });
+    }
+
+    // reCAPTCHA 验证成功的回调函数
+    function onRecaptchaSuccess() {
+      // 验证成功后触发 Google Sign-In 弹窗
+      signInWithGoogle();
+    }
+
+    // 初始化 Google Sign-In
+    function initGoogleSignIn() {
+      gapi.load('auth2', function() {
+        gapi.auth2.init({
+          client_id: 'YOUR_GOOGLE_CLIENT_ID'
+        });
+      });
+    }
+
+    // 触发 Google Sign-In 弹窗
+    function signInWithGoogle() {
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.signIn().then(function(googleUser) {
+        onSignIn(googleUser);
+      });
+    }
+
+    // 处理 Google 登录响应
+    function onSignIn(googleUser) {
+      var profile = googleUser.getBasicProfile();
+      console.log('ID: ' + profile.getId());
+      console.log('Name: ' + profile.getName());
+      console.log('Image URL: ' + profile.getImageUrl());
+      console.log('Email: ' + profile.getEmail());
+
+      // 在此处处理登录响应，例如将凭据发送到您的后端服务器进行验证
+    }
+
+    // 初始化 Google Sign-In
+    initGoogleSignIn();
+
+    // 为自定义按钮添加点击事件监听器
+    document.getElementById('customSignInBtn').addEventListener('click', function() {
+      // 在点击按钮时先执行 reCAPTCHA 验证
+      grecaptcha.execute(recaptchaWidgetId);
+    });
+  </script>
+</body>
+</html>
