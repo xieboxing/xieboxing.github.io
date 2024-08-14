@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hCaptcha Example</title>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
+<body>
+    <h1>hCaptcha Invisible Example</h1>
+    <form id="my-form">
+        <button class="h-captcha" data-sitekey="ca567228-d866-4180-a0bc-a3c29c564c14" data-callback="onSubmit" type="button">
+            Verify and Submit
+        </button>
+    </form>
+    <script>
+        function onSubmit(token) {
+            console.log("hCaptcha token:", token);
+            // 在此处处理表单提交，例如：
+            // document.getElementById('my-form').submit();
+        }
+    </script>
+</body>
+</html>
