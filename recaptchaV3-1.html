@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reCAPTCHA v3 Example</title>
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdPOycqAAAAAJqoG6FHEFrykst7Hyq30TlW3K45"></script>
+</head>
+<body>
+    <button id="generate-token-button" type="button">Generate Token</button>
+    <p id="token-display" onclick="copyTokenToClipboard()" style="cursor: pointer;"></p>
+
+    <script>
+        function copyTokenToClipboard() {
+            const el = document.createElement('textarea');
+            el.value = document.getElementById('token-display').innerText;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert('Token copied to clipboard!');
+        }
+
+        document.getElementById('generate-token-button').addEventListener('click', function() {
+            grecaptcha.ready(function() {
+                grecaptcha.execute('6LdPOycqAAAAAJqoG6FHEFrykst7Hyq30TlW3K45', {action: 'submit'}).then(function(token) {
+                    // Display the token on the page
+                    document.getElementById('token-display').innerText = token;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
