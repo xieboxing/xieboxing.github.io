@@ -6,9 +6,11 @@
     <title>Turnstile Token Generation</title>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
     <script>
+        const publicKey = "0x4AAAAAAAisOxB5uJ6wh2HH";
+
         function generateToken() {
             turnstile.render('#example-container', {
-                sitekey: '0x4AAAAAAAhTQeBZ505FjL79',
+                sitekey: publicKey,
                 callback: function(token) {
                     //生成的token，传给接口进行验证
                     console.log(`Challenge Success ${token}`);
@@ -19,7 +21,7 @@
         window.onloadTurnstileCallback = function () {
             // Render the Turnstile widget on page load, but don't execute the challenge yet
             turnstile.render('#example-container', {
-                sitekey: '0x4AAAAAAAhTQeBZ505FjL79',
+                sitekey: publicKey,
                 execution: 'execute',
             });
         };
