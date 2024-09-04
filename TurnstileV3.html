@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnstile Token Generation</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
+    <script>
+        function generateToken() {
+            turnstile.render('#example-container', {
+                sitekey: '0x4AAAAAAAhTQeBZ505FjL79',
+                callback: function(token) {
+                    //生成的token，传给接口进行验证
+                    console.log(`Challenge Success ${token}`);
+                },
+            });
+        }
+
+        window.onloadTurnstileCallback = function () {
+            // Render the Turnstile widget on page load, but don't execute the challenge yet
+            turnstile.render('#example-container', {
+                sitekey: '0x4AAAAAAAhTQeBZ505FjL79',
+                execution: 'execute',
+            });
+        };
+    </script>
+</head>
+<body>
+    <div id="example-container" style="display:none;"></div>
+    <button type="button" onclick="generateToken()">Generate Token</button>
+</body>
+</html>
