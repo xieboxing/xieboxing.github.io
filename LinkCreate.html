@@ -47,7 +47,7 @@
     <h1>Link Generator</h1>
     <h2>Google Play 推广链接生成</h2>
     <form onsubmit="event.preventDefault(); generatePlayLink();">
-        <label for="id">Google Play App ID:</label>
+        <label for="id">输入Google Play App ID:</label>
         <input type="text" id="id" value="com.mcmarkets.mt5" required>
         <br>
         <label for="utm_id">utm_id:</label>
@@ -69,7 +69,7 @@
         <input type="text" id="utm_content" required>
         <br>
         <br>
-        <button type="submit">生成 Google Play 链接</button>     <button onclick="copyLink('generatedPlayLink')">复制下面的Google Play链接</button>
+        <button type="submit">点击生成 Google Play 链接</button>     <button onclick="copyLink('generatedPlayLink')">点击复制下面展示的Google Play链接</button>
     </form>
     <label for="generatedPlayLink">Generated Google Play Link:</label>
     <p id="generatedPlayLink"></p>
@@ -80,7 +80,7 @@
 
     <h2>活动落地页链接生成</h2>
     <form onsubmit="event.preventDefault(); generatePromoLink();">
-        <label for="promoLink">活动页链接:</label>
+        <label for="promoLink">输入活动页链接:</label>
         <input type="text" id="promoLink" value="https://mcmarkets.com" required>
         <br>
         <label for="promoUtmId">utm_id:</label>
@@ -102,9 +102,9 @@
         <input type="text" id="promoUtmContent" required>
         <br>
         <br>
-        <button type="submit">生成活动链接</button>     <button onclick="copyLink('generatedPromoLink')">复制下面的活动链接</button>
+        <button type="submit">点击生成活动链接</button>     <button onclick="copyLink('generatedPromoLink')">点击复制下面展示的活动链接</button>
     </form>
-    <label for="generatedPromoLink">Generated Promotion Link:</label>
+    <label for="generatedPromoLink">Generated Link:</label>
     <p id="generatedPromoLink"></p>
 
 </body>
