@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google reCAPTCHA 示例</title>
+  <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=zh-CN" async defer></script>
+</head>
+<body>
+  <h1>Google reCAPTCHA 示例</h1>
+  <div id="recaptcha-container"></div>
+  <button id="submitBtn" type="submit">提交</button>
+
+  <script>
+    var onloadCallback = function() {
+      console.log("grecaptcha is ready!");
+      document.getElementById("submitBtn").addEventListener("click", function() {
+        var recaptchaContainer = document.getElementById('recaptcha-container');
+        var iframe = document.createElement('iframe');
+        iframe.src = 'https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId&co=aHR0cHM6Ly93d3cueW91cmRvbWFpbi5jb206NDQz&hl=zh-CN&v=qc5B-qjP0QEimFYUxcpWJy5B&size=normal&cb=2w4h3j4v5b';
+        iframe.width = '100%';
+        iframe.height = '480';
+        recaptchaContainer.appendChild(iframe);
+
+        grecaptcha.render('recaptcha-container', {
+          'sitekey': '6LeKPSIqAAAAAMg7Jck8951YT3Z3bM0wlI5VNEId',
+          'callback': function(token) {
+            // Add your logic to submit to your backend server here.
+            console.log('Token:', token);
+          }
+        });
+      });
+    };
+  </script>
+</body>
+</html>
