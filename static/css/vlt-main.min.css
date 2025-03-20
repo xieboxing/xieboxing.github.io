@@ -542,14 +542,17 @@ to {
 	-webkit-animation-timing-function:ease-in-out;
 	animation-timing-function:ease-in-out
 }
+/*选中文本的背景颜色*/
 ::-moz-selection {
 	color:#fff;
 	background-color:#cf000f
 }
+/*选中文本的背景颜色*/
 ::selection {
 	color:#fff;
 	background-color:#cf000f
 }
+/*选中文本的背景颜色*/
 ::-moz-selection {
 	color:#fff;
 	background-color:#cf000f
@@ -562,7 +565,9 @@ body {
 	margin:0;
 	padding:0;
 	color:#767676;
-	background-color:#161616
+	/* 全局页面背景颜色 */
+	/*background-color:#161616;*/
+	background-color:#000423;
 }
 img {
 	max-width:100%;
@@ -828,6 +833,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	.vlt-navbar .vlt-navbar-inner--center {
 	display:none
 }
+/*导航栏背景颜色*/
 }.vlt-navbar.vlt-navbar--transparent .vlt-navbar-background {
 	background-color:transparent
 }
@@ -841,13 +847,15 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	height:0;
 	-webkit-transition:all .3s;
 	transition:all .3s;
-	background-color:#161616;
+	background-color:#000423;
 	-webkit-box-shadow:none;
 	box-shadow:none
 }
+/*导航栏背景颜色*/
 .vlt-navbar.vlt-navbar--solid .vlt-navbar-background {
-	background-color:#161616
+	background-color:#000423
 }
+/*导航栏背景颜色*/
 .vlt-navbar.vlt-navbar--transparent-always .vlt-navbar-background {
 	background-color:transparent
 }
@@ -935,6 +943,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 .vlt-default-menu__navigation .sf-menu>li.active>a,.vlt-default-menu__navigation .sf-menu>li:hover>a {
 	color:#cf000f
 }
+/*侧边菜单的背景颜色*/
 .vlt-offcanvas-menu {
 	position:fixed;
 	z-index:80;
@@ -951,7 +960,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-webkit-transform:translate3d(100%,0,0);
 	transform:translate3d(100%,0,0);
 	color:#fff;
-	background-color:#161616;
+	background-color:#000423;
 	-webkit-box-orient:vertical;
 	-webkit-box-direction:normal;
 	-webkit-flex-direction:column;
@@ -1207,10 +1216,11 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-webkit-box-shadow:inset 0 0 0 1px #cf000f;
 	box-shadow:inset 0 0 0 1px #cf000f
 }
+/* 首页 副标题文字 */
 [data-anchor=Home] p {
 	font-size: 1.2rem;
 	max-width:23.125rem;
-	color:rgba(255,255,255,.6)
+	color:rgba(255,255,255)
 }
 [data-anchor=About] p {
 	font-size:.9375rem;
@@ -1399,8 +1409,9 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-ms-transform:scale(1.05);
 	transform:scale(1.05)
 }
+/* 文章卡片悬停时的背景颜色 */
 .vlt-post--masonry:hover .vlt-post-media::before {
-	background-color:#161616
+	background-color:#000423
 }
 .vlt-post--masonry:hover .vlt-post-content {
 	opacity:1
@@ -1496,8 +1507,9 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-webkit-animation-delay:.2s;
 	animation-delay:.2s
 }
+/* 项目介绍 - 标题*/
 .vlt-project-title {
-	font-size:7.5rem;
+	font-size:3.5rem;
 	font-weight:600;
 	line-height:1.1
 }
@@ -1544,9 +1556,11 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 ::-webkit-scrollbar {
 	width:5px
 }
+/* 滚动条轨道背景颜色 */
 ::-webkit-scrollbar-track {
-	background-color:#161616
+	background-color:#000423
 }
+/* 滚动条滑块背景颜色 */
 ::-webkit-scrollbar-thumb {
 	background-color:#cf000f
 }
@@ -1668,6 +1682,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	width:50px;
 	height:50px
 }
+/*加载动画的背景颜色*/
 .double-bounce-one,.double-bounce-two {
 	position:absolute;
 	top:0;
@@ -1698,8 +1713,9 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-ms-transform:scale(1.1);
 	transform:scale(1.1)
 }
+/* 弹窗背景颜色*/
 .fancybox-bg,.vp-fancybox .fancybox-bg {
-	background-color:#161616
+	background-color:#000423
 }
 .fancybox-is-open .fancybox-bg {
 	opacity:.8
@@ -1833,7 +1849,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	display:-ms-flexbox;
 	display:flex;
 	flex-direction:column;
-	background-color:#161616;
+	background-color:#000423;
 	background-repeat:no-repeat;
 	background-position:center;
 	background-size:cover;
@@ -1978,12 +1994,13 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-ms-transform:scale(1);
 	transform:scale(1)
 }
+/* 进度条 */
 .vlt-fullpage-slider-progress-bar {
 	position:fixed;
 	z-index:75;
 	top:50%;
 	right:1.875rem;
-	width:2px;
+	width:4px;
 	height:28.125rem;
 	-webkit-transform:translate(0,-50%);
 	-ms-transform:translate(0,-50%);
@@ -2159,12 +2176,13 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-webkit-transform-origin:bottom;
 	-ms-transform-origin:bottom;
 	transform-origin:bottom;
-	background-color:#161616
+	background-color:#000423
 }
 .vlt-slider-controls {
 	font-size:0;
 	line-height:1
 }
+/*滑块分页器圆点的背景颜色*/
 .vlt-slider-controls .vlt-swiper-pagination .swiper-pagination-bullet {
 	width:.75rem;
 	height:.75rem;
@@ -2174,12 +2192,14 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 .vlt-slider-controls .vlt-swiper-pagination .swiper-pagination-bullet:focus {
 	outline:0
 }
+/*滑块分页器圆点的背景颜色*/
 .vlt-slider-controls .vlt-swiper-pagination .swiper-pagination-bullet-active {
 	background-color:#cf000f
 }
 .vlt-slider-controls .vlt-swiper-pagination .swiper-pagination-bullet+.swiper-pagination-bullet {
 	margin-left:1.375rem
 }
+/*滑块导航按钮的背景颜色*/
 .vlt-slider-controls--style-1 .vlt-swiper-button-next,.vlt-slider-controls--style-1 .vlt-swiper-button-prev {
 	display:-webkit-inline-box;
 	display:-webkit-inline-flex;
@@ -2206,6 +2226,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 .vlt-slider-controls--style-1 .vlt-swiper-button-next:focus,.vlt-slider-controls--style-1 .vlt-swiper-button-prev:focus {
 	outline:0
 }
+/*滑块导航按钮的背景颜色*/
 .vlt-slider-controls--style-1 .vlt-swiper-button-next:hover,.vlt-slider-controls--style-1 .vlt-swiper-button-prev:hover {
 	background-color:#cf000f;
 	-webkit-box-shadow:inset 0 0 0 1px #cf000f;

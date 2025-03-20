@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to Array</title>
+    <script src="https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-y/xlsx/0.18.2/xlsx.full.min.js"></script>
+    <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-y/FileSaver.js/2014-08-29/FileSaver.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 2px solid black;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word;
+            min-width: 50px; /* 为单元格设置最小宽度 */
+            max-width: 300px; /* 为单元格设置最大宽度 */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    
+</head>
+<body>
+    <textarea id="paste-area" placeholder="在此处粘贴的复制的Excel数据" rows="20" cols="10000"></textarea>
+    <button id="process-data">处理数据</button>
+    <button id="download-result" disabled>下载结果</button>
+    <table id="table"></table>
+
+    <script>
+        let result = [];
+        document.getElementById('process-data').addEventListener('click', handleData, false);
+        document.getElementById('download-result').addEventListener('click', downloadResult, false);
+
+        function handleData() {
+            const data = document.getElementById('paste-area').value;
+            const workbook = XLSX.read(data, { type: 'string', raw: true });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const array = sheetToArray(sheet);
+
+            let state = 0;
+            let l1 = 0;
+            let l2 = 0;
+            let line = 0;
+
+
+            outerLoop: for (const item of array) {
+                let columnNumber = 0;
+                line++;
+                if(state==1){
+                    let {common,unique1,unique2} = compareStrings(item[l1-1]&&item[l1-1].toString()||"", item[l2-1]&&item[l2-1].toString()||"");
+                    result.push([line,item[l1-1],item[l2-1],common.join(', '),unique1.join(', '),unique2.join(', ')]);
+
+                    continue;
+                }
+
+                for (const item2 of item) {
+                    columnNumber++;
+                    if(item2=="规格描述"){
+                        l1=columnNumber;
+                        if(result.length==0) result.push(["Excel行数"])
+                        result[0].push("规格描述");
+
+                        if(l1>0&&l2>0){
+                            state = 1;
+                            result[0].push(...["相同的元素","绿联描述-独有的元素","规格描述-独有的元素"]);
+                            continue;
+                        }
+                    }else if(item2=="绿联描述"){
+                        l2=columnNumber;
+                        if(result.length==0) result.push(["Excel行数"])
+                            result[0].push("绿联描述");
+
+                        if(l1>0&&l2>0){
+                            state = 1;
+                            result[0].push(...["相同的元素","规格描述-独有的元素","绿联描述-独有的元素"]);
+                            break;
+                        }
+                    }
+
+                }
+            }
+            console.log(array);
+            console.log(result);
+            createTable(result);
+            document.getElementById('download-result').disabled = false;
+        }
+
+        function downloadResult() {
+            const ws = XLSX.utils.aoa_to_sheet(result);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Result');
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+
+            saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'result.xlsx');
+        }
+
+        function sheetToArray(sheet) {
+            const ref = sheet['!ref'];
+            const range = XLSX.utils.decode_range(ref);
+            const cols = range.e.c - range.s.c + 1;
+            const rows = range.e.r - range.s.r + 1;
+            const array = new Array(rows).fill(null).map(() => new Array(cols).fill(null));
+            for (const cellAddress in sheet) {
+                if (cellAddress[0] === '!') continue;
+                const cell = XLSX.utils.decode_cell(cellAddress);
+                const value = sheet[cellAddress].v;
+                array[cell.r][cell.c] = value;
+            }
+            return array;
+        }
+
+        function createTable(array) {
+            const table = document.getElementById('table');
+            for (let i = 0; i < array.length; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < array[i].length; j++) {
+                    const cell = document.createElement(i === 0 ? 'th' : 'td');
+                    cell.textContent = array[i][j] !== null ? array[i][j] : '';
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+        }
+
+        function splitString(s) {
+            // 使用正则表达式匹配可能的元素
+            const regex = /[^\s，,()\\/\+（）:;；：]+/g;
+            let elements = s.match(regex);
+            return elements || [];
+        }
+
+        function compareStrings(s1, s2) {
+            let elements1 = splitString(s1);
+            let elements2 = splitString(s2);
+
+            // 创建集合
+            let set1 = new Set(elements1);
+            let set2 = new Set(elements2);
+
+            // 找到相同、s1独有和s2独有的元素
+            let common = new Set();
+            let unique1 = new Set();
+            let unique2 = new Set();
+
+            for (let e of set1) {
+                if (set2.has(e)) {
+                    common.add(e);
+                } else {
+                    unique1.add(e);
+                }
+            }
+
+            for (let e of set2) {
+                if (!set1.has(e)) {
+                    unique2.add(e);
+                }
+            }
+
+            return {
+                common: Array.from(common),
+                unique1: Array.from(unique1),
+                unique2: Array.from(unique2)
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>dealNewUserActivity</title>
+    <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/xlsx/0.18.2/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    客户列表<input type="file" id="excelFile1" accept=".xlsx,.xls" />
+    KYC审核记录<input type="file" id="excelFile2" accept=".xlsx,.xls" />
+    成交记录<input type="file" id="excelFile3" accept=".xlsx,.xls" />
+    <button onclick="handleFiles()">Process and Download</button>
+
+    <script>
+        function handleFiles() {
+            const fileInput1 = document.getElementById('excelFile1');
+            const fileInput2 = document.getElementById('excelFile2');
+            const fileInput3 = document.getElementById('excelFile3');
+
+            Promise.all([
+                readFileAsArrayBuffer(fileInput1.files[0]),
+                readFileAsArrayBuffer(fileInput2.files[0]),
+                readFileAsArrayBuffer(fileInput3.files[0])
+            ]).then(([data1, data2, data3]) => {
+                const workbook1 = XLSX.read(data1, { type: 'array' });
+                const workbook2 = XLSX.read(data2, { type: 'array' });
+                const workbook3 = XLSX.read(data3, { type: 'array' });
+
+                const d1 = workbook1.SheetNames.map(sheetName => XLSX.utils.sheet_to_json(workbook1.Sheets[sheetName]));
+                const d2 = workbook2.SheetNames.map(sheetName => XLSX.utils.sheet_to_json(workbook2.Sheets[sheetName]));
+                const d3 = workbook3.SheetNames.map(sheetName => XLSX.utils.sheet_to_json(workbook3.Sheets[sheetName]));
+
+                const userData = {};
+                const IDNumberData = {};
+
+                for (item of d1[0]) {
+                    const userId = item["客户ID"];
+                    const userState = item["客户状态"] == "正常" ? 1 : 0;
+                    const KYCState = item["KYC"] == "正常" ? 1 : 0;
+                    const email = item["邮箱"];
+                    userData[userId] = { userId, userState, KYCState, email };
+                }
+
+                for (item of d2[0]) {
+                    const userId = item["客户ID"];
+                    const KycState = item["状态"] == "审核通过" ? 1 : 0;
+                    const IDType = item["证件类型"];
+                    const IDNumber = item["证件号码"];
+                    const LastName = item["姓"];
+                    const FirstName = item["名"];
+
+                    if (!userData[userId]) {
+                        console.error("数据异常1：" + userId);
+                        continue;
+                    }
+
+                    if (item["状态"] != "审核通过") {
+                        if (IDType && !userData[userId]["IDType"]) userData[userId]["IDType"] = IDType;
+                        if (IDNumber && !userData[userId]["IDNumber"]) {
+                            if (!IDNumberData[IDNumber]) IDNumberData[IDNumber] = [];
+                            userData[userId]["IDNumber"] = IDNumber;
+                            IDNumberData[IDNumber].push(userId);
+                        }
+                        continue;
+                    }
+
+                    // console.log({userId,KycState,IDType,IDNumber,LastName,FirstName});
+
+                    if (IDType) userData[userId]["IDType"] = IDType;
+                    if (IDNumber) {
+                        if (!IDNumberData[IDNumber]) IDNumberData[IDNumber] = [];
+                        userData[userId]["IDNumber"] = IDNumber;
+                        IDNumberData[IDNumber].push(userId);
+                    }
+                    if (LastName) userData[userId]["LastName"] = LastName;
+                    if (FirstName) userData[userId]["FirstName"] = FirstName;
+                }
+
+                // console.log(userData);
+
+                const startTime = new Date("2024-07-01 00:00:00");
+                const endTime = new Date("2024-08-31 23:59:59");
+                const historicalReward = { userId: [], IDNumber: [], record: {}, IDNumberRecord: {} };
+                const successExcelData = [];
+                const allExcelData = [];
+
+                const tradeRecord = d3[0];
+                tradeRecord.sort(function (a, b) {
+                    let dateA = new Date(a["成交时间"]);
+                    let dateB = new Date(b["成交时间"]);
+                    return dateA - dateB;
+                });
+
+                for (item of tradeRecord) {
+                    const userId = item["客户ID"];
+                    const time = item["成交时间"];
+                    const sysmbol = item["交易品种"];
+                    const action = item["Action"];
+                    const entry = item["Entry"];
+                    const orderId = item["订单号"];
+
+                    let comparisonDate = new Date(time);
+                    if (comparisonDate < startTime || comparisonDate > endTime) continue;
+                    if (!userData[userId]) {
+                        console.error("数据异常3：" + userId);
+                    }
+
+                    const LastName = userData[userId]["LastName"] || " ";
+                    const FirstName = userData[userId]["FirstName"] || " ";
+                    const IDNumber = userData[userId]["IDNumber"] && maskID(userData[userId]["IDNumber"]) || "";
+                    const IDNumber2 = userData[userId]["IDNumber"] || " ";
+                    const IDType = userData[userId]["IDType"] || " ";
+                    const email = userData[userId]["email"] || " ";
+
+                    let awardStatus = 0;
+                    let reason = "";
+
+                    if (historicalReward.userId.includes(userId)) {
+                        awardStatus = -1;
+                        reason = `该用户ID已发放，userId:${userId}，发放记录：${historicalReward.record[userId] && JSON.stringify(historicalReward.record[userId])}`;
+                    } else if (!IDNumber2 || IDNumber2 == " ") {
+                        awardStatus = -1;
+                        reason = `该用户的KYC证件号异常，userId:${userId}`;
+                    } else if (historicalReward.IDNumber.includes(IDNumber2)) {
+                        awardStatus = -1;
+                        reason = `KYC证件号重复已发放，IDNumber:${IDNumber}, 发放记录：${historicalReward.IDNumberRecord[IDNumber2] && JSON.stringify(historicalReward.IDNumberRecord[IDNumber2])}`;
+                    } else {
+                        awardStatus = 1;
+                        historicalReward.userId.push(userId);
+                        historicalReward.IDNumber.push(IDNumber2);
+                        historicalReward.record[userId] = { userId, time, orderId };
+                        historicalReward.IDNumberRecord[IDNumber2] = { userId, time, orderId };
+                    }
+
+
+                    if (awardStatus == 1) {
+                        successExcelData.push({
+                            time,
+                            userId,
+                            email,
+                            awardStatus: awardStatus == 1 ? "已满足条件可发放" : "不满足条件",
+                            LastName,
+                            FirstName,
+                            orderId,
+                            IDNumber,
+                            IDType,
+                            sysmbol,
+                            action,
+                            entry,
+                            reason
+                        });
+                    }
+
+                    allExcelData.push({
+                        time,
+                        userId,
+                        email,
+                        awardStatus: awardStatus == 1 ? "已满足条件可发放" : "不满足条件",
+                        LastName,
+                        FirstName,
+                        orderId,
+                        IDNumber,
+                        IDType,
+                        sysmbol,
+                        action,
+                        entry,
+                        reason
+                    });
+                }
+
+
+
+
+                function s2ab(s) {
+                    var buf = new ArrayBuffer(s.length);
+                    var view = new Uint8Array(buf);
+                    for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                    return buf;
+                }
+
+                function exportExcel() {
+                    var wb = XLSX.utils.book_new();
+                    var ws1 = XLSX.utils.json_to_sheet(successExcelData);
+                    ws1['!cols'] = [
+                        { wch: 20 },
+                        { wch: 15 },
+                        { wch: 30 },
+                        { wch: 30 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 20 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 50 },
+                        { wch: 10 }
+                    ];
+                    XLSX.utils.book_append_sheet(wb, ws1, "达成条件");
+
+                    var ws2 = XLSX.utils.json_to_sheet(allExcelData);
+                    ws2['!cols'] = [
+                        { wch: 20 },
+                        { wch: 15 },
+                        { wch: 30 },
+                        { wch: 30 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 20 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 15 },
+                        { wch: 50 },
+                        { wch: 10 }
+                    ];
+                    XLSX.utils.book_append_sheet(wb, ws2, "所有数据");
+
+                    var now = new Date();
+                    var year = now.getFullYear();
+                    var month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    var day = now.getDate().toString().padStart(2, '0');
+                    var hour = now.getHours().toString().padStart(2, '0');
+                    var minute = now.getMinutes().toString().padStart(2, '0');
+                    var filename = `新客活动${month}${day}_${hour}${minute}.xlsx`;
+                    XLSX.writeFile(wb, filename);
+                }
+
+                successExcelData.sort(function (a, b) {
+                    let dateA = new Date(a["time"]);
+                    let dateB = new Date(b["time"]);
+                    return dateB - dateA;
+                });
+                allExcelData.sort(function (a, b) {
+                    let dateA = new Date(a["time"]);
+                    let dateB = new Date(b["time"]);
+                    return dateB - dateA;
+                });
+                exportExcel();
+
+            });
+        }
+
+        function maskID(id) {
+            if (id.length > 4) {
+                return id.slice(0, 4) + '*'.repeat(id.length - 4);
+            } else {
+                return id;
+            }
+        }
+
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(new Uint8Array(e.target.result));
+                reader.onerror = e => reject(e.target.error);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+    </script>
+</body>
+
+</html>
