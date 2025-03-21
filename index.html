@@ -22,7 +22,7 @@
 				<div class="vlt-navbar-background"></div>
 				<div class="vlt-navbar-inner">
 					<div class="vlt-navbar-inner--left">
-						<a class="vlt-navbar-logo" href="">
+						<a class="vlt-navbar-logo" href="#Home">
 							<img src="static/picture/logo.png" alt="xieboxing" style="height: 23px; width: 84px;">
 						</a>
 					</div>
@@ -287,12 +287,12 @@
 						<div class="vlt-section__content">
 							<div class="vlt-section__projects-background">
 								<!-- <img class="is-active" src="static/picture/project-01.jpg" alt="" loading="lazy"> -->
-								<!-- <img id="p2" data-src="static/picture/project-02.jpg" alt="" loading="lazy"> -->
+								<!-- <img id="x2" data-src="static/picture/project-02.jpg" alt="" loading="lazy"> -->
                 <!-- <img src="static/picture/project-01.jpg" alt="" loading="lazy"> -->
                 <img class="is-active" src="static/picture/x1.png" alt="" loading="lazy">
-                <img class="p2" src="static/picture/x2.png" alt="" loading="lazy">
-                <img src="static/picture/x3.png" alt="" loading="lazy">
-
+                <img class="x2" data-src="static/picture/x2.png" alt="" loading="lazy">
+                <img class="x3" data-src="static/picture/x3.png" alt="" loading="lazy">
+                
 							</div>
 							<div class="container">
 								<div class="vlt-gap-100"></div>
@@ -307,7 +307,8 @@
                             <br>
                             <h6>- 全球领先的差价合约、外汇、指数、大宗商品和加密货币一站式在线交易平台</h6>
 														<div class="vlt-project-excerpt">
-															<p>作为产品负责人，我主导构建了整套的CFD SaaS系统的设计与开发，包括定制化的主标/白标管理平台、营销、代理、AI工具等。在此基础上，我设计并推出了MC Markets品牌，覆盖PC、H5和APP端，为全球客户提供领先的金融交易体验, 并赢得了“最佳经纪商”、“亚太地区增长最快经商”和“最佳新人经纪商”等国际荣誉。</p>
+															<p>作为产品负责人，我主导构建了整套的CFD SaaS系统的设计与开发，包括定制化的主标/白标管理平台、营销/代理系统、AI工具等。在此基础上，我设计并推出了MC Markets品牌，覆盖PC、H5和APP端，为全球客户提供领先的金融交易体验, 并赢得了“最佳经纪商”、“亚太地区增长最快经商”和“最佳新人经纪商”等国际荣誉。
+                              </p>
 														</div>
 														<!-- <a class="vlt-btn vlt-btn--primary vlt-btn--md" href="single-product.html" target="_self">See Project</a> -->
 													</article>
@@ -796,7 +797,7 @@
 					<div class="vlt-section__vertical-align">
 						<div class="vlt-section__content">
 							<div class="vlt-section__ken-burn-background">
-								<img src="static/picture/c1.png" alt="">
+								<img id="c1" data-src="static/picture/c1.png" alt="">
 							</div>
 							<div class="container">
 								<div class="row">
@@ -807,11 +808,14 @@
 											<!-- <p>You'll called for yielding male,so lights Stars abundantly,is their.</p> -->
 
 											<p>
-												<a class="tel" href="">邮箱:</a>
+												<a class="tel" href="">邮箱</a>
+                        <br/>
 												<a class="tel" href="">a513567678@gmail.com</a>
 											</p>
+                      <br/>
 											<p>
-												<a class="tel" href="" style="display: block;">微信:</a>
+												<a class="tel" href="" style="display: block;">微信</a>
+                        <br/>
 												<img id="wechatPng" data-src="static/picture/wechat.png" alt="static/picture/wechat.png" style="height: 200px; width: 200px;display:none;">
 											</p>
 
@@ -902,7 +906,45 @@
 		<!-- <script src="static/js/x-email.js"></script> -->
 
 		<script>
-		var scripts=['static/js/email.min.js','static/js/x-email.js'];function loadScript(index){if(index>=scripts.length){return}var script=document.createElement('script');script.src=scripts[index];script.onload=function(){loadScript(index+1)};document.body.appendChild(script)}window.onload=function(){setTimeout(function(){var wechatImg=$('#wechatPng');wechatImg.attr('src',wechatImg.attr('data-src')).on('load',function(){wechatImg.show()});var p2Img=$('#p2');p2Img.attr('src',p2Img.attr('data-src')).on('load',function(){p2Img.show()});loadScript(0)},1500)};
-		</script>
+		// var scripts=['static/js/email.min.js','static/js/x-email.js'];function loadScript(index){if(index>=scripts.length){return}var script=document.createElement('script');script.src=scripts[index];script.onload=function(){loadScript(index+1)};document.body.appendChild(script)}window.onload=function(){setTimeout(function(){var wechatImg=$('#wechatPng');wechatImg.attr('src',wechatImg.attr('data-src')).on('load',function(){wechatImg.show()});var x2Img=$('#x2');x2Img.attr('src',x2Img.attr('data-src')).on('load',function(){x2Img.show()});loadScript(0)},1500)};
+var scripts = ['static/js/email.min.js', 'static/js/x-email.js'];
+function loadScript(index) {
+	if (index >= scripts.length) {
+		return
+	}
+	var script = document.createElement('script');
+	script.src = scripts[index];
+	script.onload = function() {
+		loadScript(index + 1)
+	};
+	document.body.appendChild(script)
+}
+window.onload = function() {
+	setTimeout(function() {
+		var wechatImg = $('#wechatPng');
+		wechatImg.attr('src', wechatImg.attr('data-src')).on('load',
+		function() {
+			wechatImg.show()
+		});
+		var x2Img = $('.x2');
+		x2Img.attr('src', x2Img.attr('data-src')).on('load',
+		function() {
+			x2Img.show()
+		});
+		var x3Img = $('.x3');
+		x3Img.attr('src', x3Img.attr('data-src')).on('load',
+		function() {
+			x3Img.show()
+		});
+		var c1Img = $('#c1');
+		c1Img.attr('src', c1Img.attr('data-src')).on('load',
+		function() {
+			c1Img.show()
+		});
+		loadScript(0)
+	},
+	2000)
+};
+    </script>
 	</body>
 </html>

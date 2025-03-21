@@ -599,7 +599,8 @@ a:active,a:focus,a:hover {
 	outline:0
 }
 a:hover {
-	color:#cf000f
+	color:#cf000f;
+  font-size:1.05rem;
 }
 .h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6 {
 	font-weight:500;
@@ -948,7 +949,8 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	margin-left:3.125rem
 }
 .vlt-default-menu__navigation .sf-menu>li.active>a,.vlt-default-menu__navigation .sf-menu>li:hover>a {
-	color:#cf000f
+	color:#cf000f;
+  font-size: 1.2rem; 
 }
 /*侧边菜单的背景颜色*/
 .vlt-offcanvas-menu {
@@ -1569,7 +1571,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 }
 /* 滚动条滑块背景颜色 */
 ::-webkit-scrollbar-thumb {
-	background-color:#cf000f
+	background-color:#000423
 }
 .vlt-fixed-socials {
 	position:fixed;
