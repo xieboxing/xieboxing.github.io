@@ -567,7 +567,7 @@ body {
 	color:#767676;
 	/* 全局页面背景颜色 */
 	/*background-color:#161616;*/
-	background-color:#000423;
+	background-color:#000729;
 }
 img {
 	max-width:100%;
@@ -613,7 +613,7 @@ a:hover {
 	font-size:5rem
 }
 .h1.vlt-large-heading,h1.vlt-large-heading {
-	font-size:7.5rem;
+	font-size:4rem;
 	font-weight:600
 }
 .h2,h2 {
@@ -855,13 +855,13 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	height:0;
 	-webkit-transition:all .3s;
 	transition:all .3s;
-	background-color:#000423;
+	background-color:#000729;
 	-webkit-box-shadow:none;
 	box-shadow:none
 }
 /*导航栏背景颜色*/
 .vlt-navbar.vlt-navbar--solid .vlt-navbar-background {
-	background-color:#000423
+	background-color:#000729
 }
 /*导航栏背景颜色*/
 .vlt-navbar.vlt-navbar--transparent-always .vlt-navbar-background {
@@ -951,6 +951,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 .vlt-default-menu__navigation .sf-menu>li.active>a,.vlt-default-menu__navigation .sf-menu>li:hover>a {
 	color:#cf000f;
   font-size: 1.2rem; 
+  font-weight: 700;
 }
 /*侧边菜单的背景颜色*/
 .vlt-offcanvas-menu {
@@ -969,7 +970,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-webkit-transform:translate3d(100%,0,0);
 	transform:translate3d(100%,0,0);
 	color:#fff;
-	background-color:#000423;
+	background-color:#000729;
 	-webkit-box-orient:vertical;
 	-webkit-box-direction:normal;
 	-webkit-flex-direction:column;
@@ -1420,7 +1421,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 }
 /* 文章卡片悬停时的背景颜色 */
 .vlt-post--masonry:hover .vlt-post-media::before {
-	background-color:#000423
+	background-color:#000729
 }
 .vlt-post--masonry:hover .vlt-post-content {
 	opacity:1
@@ -1522,9 +1523,10 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	font-weight:600;
 	line-height:1.1
 }
+/* H5-项目经验1-标题字体 */
 @media only screen and (max-width:767px) {
 	.vlt-project-title {
-	font-size:5rem
+	font-size:2rem
 }
 }.vlt-project-excerpt {
 	font-size:.9375rem;
@@ -1567,11 +1569,11 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 }
 /* 滚动条轨道背景颜色 */
 ::-webkit-scrollbar-track {
-	background-color:#000423
+	background-color:#000729
 }
 /* 滚动条滑块背景颜色 */
 ::-webkit-scrollbar-thumb {
-	background-color:#000423
+	background-color:#000729
 }
 .vlt-fixed-socials {
 	position:fixed;
@@ -1724,7 +1726,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 }
 /* 弹窗背景颜色*/
 .fancybox-bg,.vp-fancybox .fancybox-bg {
-	background-color:#000423
+	background-color:#000729
 }
 .fancybox-is-open .fancybox-bg {
 	opacity:.8
@@ -1858,7 +1860,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	display:-ms-flexbox;
 	display:flex;
 	flex-direction:column;
-	background-color:#000423;
+	background-color:#000729;
 	background-repeat:no-repeat;
 	background-position:center;
 	background-size:cover;
@@ -1967,7 +1969,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	height:100%;
 	pointer-events:none
 }
-.vlt-fullpage-slider .vlt-section .vlt-section__ken-burn-background.has-mobile-image img:nth-child(2) {
+/* .vlt-fullpage-slider .vlt-section .vlt-section__ken-burn-background.has-mobile-image img:nth-child(2) {
 	display:none
 }
 @media only screen and (max-width:575px) {
@@ -1977,7 +1979,8 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 .vlt-fullpage-slider .vlt-section .vlt-section__ken-burn-background.has-mobile-image img:nth-child(2) {
 	display:block
 }
-}.vlt-fullpage-slider .vlt-section .vlt-section__ken-burn-background img {
+} */
+.vlt-fullpage-slider .vlt-section .vlt-section__ken-burn-background img {
 	position:absolute;
 	top:0;
 	left:0;
@@ -2185,7 +2188,7 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-webkit-transform-origin:bottom;
 	-ms-transform-origin:bottom;
 	transform-origin:bottom;
-	background-color:#000423
+	background-color:#000729
 }
 .vlt-slider-controls {
 	font-size:0;
@@ -2389,3 +2392,4 @@ input[type=date]:focus::-webkit-input-placeholder,input[type=email]:focus::-webk
 	-ms-transform:scale(1.1);
 	transform:scale(1.1)
 }
+
