@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Generator</title>
+    <script>
+
+        function validatePromoLink(promoLink) {
+            // 检查链接是否以 https:// 开头
+            if (!promoLink.startsWith("https://")) {
+                alert("活动链接必须以 https:// 开头。");
+                return false;
+            }
+
+            // 检查链接中问号的数量
+            const questionMarkCount = promoLink.split("?").length - 1;
+            if (questionMarkCount > 1) {
+                alert("活动链接中只能有一个问号。");
+                return false;
+            }
+
+            // 检查链接是否为有效的 URL
+            const urlPattern = new RegExp(
+                "^(https:\\/\\/)" + // 协议
+                "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" + // 域名
+                "((\\d{1,3}\\.){3}\\d{1,3}))" + // 或 IP 地址
+                "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // 端口和路径
+                "(\\?[;&a-z\\d%_.~+=-]*)?" + // 查询字符串
+                "(\\#[-a-z\\d_]*)?$", "i"
+            );
+
+            if (!urlPattern.test(promoLink)) {
+                alert("请输入一个有效的活动链接。");
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateAppId(appId) {
+            // 正则表达式，用于匹配类似 "com.mcmarkets.mt5" 的格式
+            const regex = /^([a-z]{2,}\.)+[a-z0-9]{2,}$/i;
+
+            // 使用正则表达式测试输入的 appId
+            return regex.test(appId);
+        }
+
+        function generatePlayLink() {
+            const id = document.getElementById("id").value;
+            const utm_id = document.getElementById("utm_id").value;
+            const utm_source = document.getElementById("utm_source").value;
+            const utm_medium = document.getElementById("utm_medium").value;
+            const utm_campaign = document.getElementById("utm_campaign").value;
+            const utm_term = document.getElementById("utm_term").value;
+            const utm_content = document.getElementById("utm_content").value;
+
+            let link = `https://play.google.com/store/apps/details?id=${id}&referrer=`;
+            if(utm_id) link+=`utm_id%3D${utm_id}`;
+            if(utm_source) link+=`%26utm_source%3D${utm_source}`;
+            if(utm_medium) link+=`%26utm_medium%3D${utm_medium}`;
+            if(utm_campaign) link+=`%26utm_campaign%3D${utm_campaign}`;
+            if(utm_term) link+=`%26utm_term%3D${utm_term}`;
+            if(utm_content) link+=`%26utm_content%3D${utm_content}`;
+
+            // const link = `https://play.google.com/store/apps/details?id=${id}&referrer=utm_id%3D${utm_id}%26utm_source%3D${utm_source}%26utm_medium%3D${utm_medium}%26utm_term%3D${utm_term}%26utm_content%3D${utm_content}%26utm_campaign%3D${utm_campaign}`;
+
+            if (!validateAppId(id)) {
+                alert("Google Play App ID 有误");
+                return;
+            }
+
+            document.getElementById("generatedPlayLink").textContent = link;
+        }
+
+        function generatePromoLink() {
+
+
+
+            const promoLink = document.getElementById("promoLink").value;
+            const utm_id = document.getElementById("promoUtmId").value;
+            const utm_source = document.getElementById("promoUtmSource").value;
+            const utm_medium = document.getElementById("promoUtmMedium").value;
+            const utm_campaign = document.getElementById("promoUtmCampaign").value;
+            const utm_term = document.getElementById("promoUtmTerm").value;
+            const utm_content = document.getElementById("promoUtmContent").value;
+
+            const separator = promoLink.includes("?") ? "&" : "?";
+
+            let link = `${promoLink}${separator}`;
+            if(utm_id) link+=`utm_id=${utm_id}`;
+            if(utm_source) link+=`&utm_source=${utm_source}`;
+            if(utm_medium) link+=`&utm_medium=${utm_medium}`;
+            if(utm_campaign)  link+=`&utm_campaign=${utm_campaign}`;
+            if(utm_term)  link+=`&utm_term=${utm_term}`;
+            if(utm_content)  link+=`&utm_content=${utm_content}`;
+
+            // const link = `${promoLink}${separator}utmId=${utm_id}&utmSource=${utm_source}&utmMedium=${utm_medium}&utmCampaign=${utm_campaign}&utmTerm=${utm_term}&utmContent=${utm_content}`;
+
+            if (!validatePromoLink(promoLink)) {
+                return;
+            }
+
+            document.getElementById("generatedPromoLink").textContent = link;
+        }
+
+        function copyLink(id) {
+            const copyText = document.getElementById(id);
+            const el = document.createElement('textarea');
+            el.value = copyText.textContent;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+            alert("Copied the link: " + copyText.textContent);
+        }
+    </script>
+</head>
+<body>
+    <h1>Link Generator</h1>
+    <h2>Google Play 推广链接生成</h2>
+    <form onsubmit="event.preventDefault(); generatePlayLink();">
+        <label for="id">输入Google Play App ID:</label>
+        <input type="text" id="id" value="com.mcmarkets.mt5" required>
+        <br>
+        <label for="utm_id">utm_id:</label>
+        <input type="text" id="utm_id" required>
+        <br>
+        <label for="utm_source">utm_source:</label>
+        <input type="text" id="utm_source">
+        <br>
+        <label for="utm_medium">utm_medium:</label>
+        <input type="text" id="utm_medium">
+        <br>
+        <label for="utm_campaign">utm_campaign:</label>
+        <input type="text" id="utm_campaign">
+        <br>
+        <label for="utm_term">utm_term:</label>
+        <input type="text" id="utm_term">
+        <br>
+        <label for="utm_content">utm_content:</label>
+        <input type="text" id="utm_content">
+        <br>
+        <br>
+        <button type="submit">点击生成 Google Play 链接</button>     <button onclick="copyLink('generatedPlayLink')">点击复制下面展示的Google Play链接</button>
+    </form>
+    <label for="generatedPlayLink">Google Play Link:</label>
+    <p id="generatedPlayLink"></p>
+
+
+    <br>
+    <hr> <!-- 在这里添加分隔线 -->
+
+    <h2>活动落地页链接生成</h2>
+    <form onsubmit="event.preventDefault(); generatePromoLink();">
+        <label for="promoLink">输入活动页链接:</label>
+        <input type="text" id="promoLink" value="https://mcmarkets.com" required>
+        <br>
+        <label for="promoUtmId">utm_id:</label>
+        <input type="text" id="promoUtmId" required>
+        <br>
+        <label for="promoUtmSource">utm_source:</label>
+        <input type="text" id="promoUtmSource">
+        <br>
+        <label for="promoUtmMedium">utm_medium:</label>
+        <input type="text" id="promoUtmMedium">
+        <br>
+        <label for="promoUtmCampaign">utm_campaign:</label>
+        <input type="text" id="promoUtmCampaign">
+        <br>
+        <label for="promoUtmTerm">utm_term:</label>
+        <input type="text" id="promoUtmTerm">
+        <br>
+        <label for="promoUtmContent">utm_content:</label>
+        <input type="text" id="promoUtmContent">
+        <br>
+        <br>
+        <button type="submit">点击生成活动链接</button>     <button onclick="copyLink('generatedPromoLink')">点击复制下面展示的活动链接</button>
+    </form>
+    <label for="generatedPromoLink">活动链接:</label>
+    <p id="generatedPromoLink"></p>
+
+</body>
+</html>
