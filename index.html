@@ -56,7 +56,7 @@
 				<div class="vlt-navbar-inner--right">
 					<div class="d-flex align-items-center">
 						<!-- <div class="vlt-navbar-contacts"> -->
-						<a id="email" href="#Contact">a513567678@gmail.com &nbsp;</a>
+						<a id="email2" href="#Contact">a513567678@gmail.com &nbsp;</a>
 						<!-- </div> -->
 						<a class="vlt-menu-burger js-offcanvas-menu-open" href="#">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24"
@@ -416,16 +416,15 @@
 										<div class="vlt-gap-30"></div>
 
 										<p>
-											<!-- <h4>邮箱</h4> -->
 											<a class="tel" href="mailto:a513567678@gmail.com" href="">邮箱</a>
 											<br />
 											<br />
-											<a class="tel" href="mailto:a513567678@gmail.com">a513567678@gmail.com</a>
+											<a class="tel" id="emailAccount"
+												href="mailto:a513567678@gmail.com">a513567678@gmail.com</a>
 										</p>
 										<br />
 										<p>
 										<h4>微信</h4>
-										<!-- <a class="tel" href="weixin://addfriend?username=Boxing-88888" style="display: block;">微信</a> -->
 										<br />
 										<img id="wechatPng" data-src="static/picture/wechat.png"
 											alt="static/picture/wechat.png"
@@ -541,13 +540,15 @@
 				loadScript(0)
 			},
 				2000)
+
+			// H5全屏模式
+			window.addEventListener('load', function () {
+				setTimeout(function () {
+					window.scrollTo(0, 1);
+				}, 100);
+			});
 		};
-		// H5全屏模式
-		window.addEventListener('load', function () {
-			setTimeout(function () {
-				window.scrollTo(0, 1);
-			}, 100);
-		});
+
 	</script>
 </body>
 

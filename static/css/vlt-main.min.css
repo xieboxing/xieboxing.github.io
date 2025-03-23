@@ -3108,7 +3108,7 @@ textarea:focus::-webkit-input-placeholder {
 /* 屏幕小于400px隐藏logo */
 @media (max-width: 400px) {
 
-	#email {
+	#email2 {
 		display: none;
 	}
 
@@ -3127,13 +3127,6 @@ textarea:focus::-webkit-input-placeholder {
 
 }
 
-/* 屏幕小于370px*/
-/* @media (max-width: 370px) {
-	.vlt-navbar-logo img {
-		display: none;
-	}
-} */
-
 /* 邮箱红色悬停 */
 a.tel:hover {
 	color: #CF000F;
@@ -3142,4 +3135,15 @@ a.tel:hover {
 	/* 放大1.1倍 */
 	font-weight: 700;
 	/* 加粗字体 */
+}
+
+/* 屏幕小于500px*/
+@media (max-width: 370px) {
+	#emailAccount {
+		font-size: 1.2rem;
+	}
+
+	address	{
+		font-size: 1.2rem;
+	}
 }
