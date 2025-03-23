@@ -3137,7 +3137,7 @@ a.tel:hover {
 	/* 加粗字体 */
 }
 
-/* 屏幕小于500px*/
+/* 屏幕小于600px*/
 @media (max-width: 370px) {
 	#emailAccount {
 		font-size: 1.2rem;
