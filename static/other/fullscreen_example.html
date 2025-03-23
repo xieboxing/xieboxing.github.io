@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen API Example</title>
+</head>
+
+<body>
+    <button id="fullscreenButton">Toggle Fullscreen</button>
+
+    <script>
+        const fullscreenButton = document.getElementById('fullscreenButton');
+
+        // 检查浏览器支持情况
+        function requestFullscreen(element) {
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+
+        // 退出全屏模式
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        // 监听全屏状态变化
+        document.addEventListener('fullscreenchange', function () {
+            if (document.fullscreenElement) {
+                console.log('进入全屏模式');
+            } else {
+                console.log('退出全屏模式');
+            }
+        });
+
+        // 点击按钮切换全屏模式
+        fullscreenButton.addEventListener('click', function () {
+            if (document.fullscreenElement) {
+                exitFullscreen();
+            } else {
+                requestFullscreen(document.documentElement);
+            }
+        });
+    </script>
+</body>
+
+</html>    
