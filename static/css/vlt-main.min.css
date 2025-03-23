@@ -3136,7 +3136,10 @@ textarea:focus::-webkit-input-placeholder {
 
 /* 邮箱红色悬停 */
 a.tel:hover {
-	color: #CF000F; /* 红色悬停效果 */
-	transform: scale(1.1); /* 放大1.1倍 */
-	font-weight: 700; /* 加粗字体 */
-  }
+	color: #CF000F;
+	/* 红色悬停效果 */
+	transform: scale(1.1);
+	/* 放大1.1倍 */
+	font-weight: 700;
+	/* 加粗字体 */
+}
