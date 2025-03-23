@@ -2300,7 +2300,7 @@ textarea:focus::-webkit-input-placeholder {
 	animation: vlt_bounce 2s infinite ease-in-out;
 	opacity: .6;
 	border-radius: 50%;
-	background-color: #cf000f
+	background-color: #007bff
 }
 
 .double-bounce-two {
