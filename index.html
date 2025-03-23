@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="static/css/vlt-main.min.css">
 	<link rel="stylesheet" href="static/css/custom.css">
 
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </head>
 
 <body class=" animsition">
@@ -132,7 +133,8 @@
                 <img src="home-mobile.png" alt=""> -->
 							<picture>
 								<source media="(max-width: 575px)" srcset="static/picture/home-mobile.png">
-								<source media="(min-width: 576px) and (max-width: 1280px)" srcset="static/picture/home.gif">
+								<source media="(min-width: 576px) and (max-width: 1280px)"
+									srcset="static/picture/home.gif">
 								<source media="(min-width: 1281px)" srcset="static/picture/home-max.gif">
 								<img src="" alt="Responsive Image">
 							</picture>
@@ -417,16 +419,17 @@
 											<!-- <h4>邮箱</h4> -->
 											<a class="tel" href="mailto:a513567678@gmail.com" href="">邮箱</a>
 											<br />
+											<br />
 											<a class="tel" href="mailto:a513567678@gmail.com">a513567678@gmail.com</a>
 										</p>
 										<br />
 										<p>
-											<!-- <h4>微信</h4> -->
-											<a class="tel" href="weixin://addfriend?username=Boxing-88888" style="display: block;">微信</a>
-											<br />
-											<img id="wechatPng" data-src="static/picture/wechat.png"
-												alt="static/picture/wechat.png"
-												style="height: 200px; width: 200px;display:none;">
+										<h4>微信</h4>
+										<!-- <a class="tel" href="weixin://addfriend?username=Boxing-88888" style="display: block;">微信</a> -->
+										<br />
+										<img id="wechatPng" data-src="static/picture/wechat.png"
+											alt="static/picture/wechat.png"
+											style="height: 200px; width: 200px;display:none;">
 										</p>
 
 										<div class="vlt-gap-40"></div>
@@ -539,6 +542,12 @@
 			},
 				2000)
 		};
+		// H5全屏模式
+		window.addEventListener('load', function () {
+			setTimeout(function () {
+				window.scrollTo(0, 1);
+			}, 100);
+		});
 	</script>
 </body>
 

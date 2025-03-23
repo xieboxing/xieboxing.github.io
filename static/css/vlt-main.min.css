@@ -3107,14 +3107,14 @@ textarea:focus::-webkit-input-placeholder {
 
 /* 屏幕小于400px隐藏logo */
 @media (max-width: 400px) {
-	.vlt-navbar-logo img {
+
+	#email {
 		display: none;
 	}
 
 	.vlt-experience-block__title::before {
 		display: none;
 	}
-
 
 	.vlt-animated-block .tel {
 		word-break: break-all;
@@ -3127,12 +3127,12 @@ textarea:focus::-webkit-input-placeholder {
 
 }
 
-/* 屏幕小于370px隐藏邮箱 */
-@media (max-width: 370px) {
-	#email {
+/* 屏幕小于370px*/
+/* @media (max-width: 370px) {
+	.vlt-navbar-logo img {
 		display: none;
 	}
-}
+} */
 
 /* 邮箱红色悬停 */
 a.tel:hover {
