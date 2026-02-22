@@ -653,6 +653,14 @@
                 line-height: 1.4;
             }
         }
+        /* PC端左侧栏高度适配 */
+        @media (min-width: 901px) {
+            .left-sidebar {
+                min-height: 100vh;
+                height: auto;
+                overflow: visible;
+            }
+        }
 
 
         /* 微信复制Toast提示 */
