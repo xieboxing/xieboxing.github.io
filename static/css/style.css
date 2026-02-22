@@ -63,7 +63,8 @@
             top: 1.5rem;
             transition: border-color 0.3s, box-shadow 0.3s;
             /* 扫描线动画 */
-            overflow: hidden;
+            overflow: visible;
+            background-clip: padding-box;
         }
         .left-sidebar::before {
             content: '';
@@ -87,8 +88,9 @@
         }
 
         .left-sidebar:hover {
-            border-color: #00f0ff;
-            box-shadow: 0 20px 40px -8px #00f0ff33, 0 0 30px #00f0ff1a;
+            border-color: transparent;
+            box-shadow: 0 20px 30px -10px #00f0ff30, 0 0 20px #00f0ff20;
+            transform: translateY(-3px);
         }
 
         /* 姓名/标题 */
@@ -242,10 +244,12 @@
             backdrop-filter: blur(4px);
             transition: 0.2s;
             cursor: default;
+            position: relative;
+            background-clip: padding-box;
             box-shadow: 0 0 5px #00f0ff20;
         }
         .tag:hover {
-            border-color: #00f0ff;
+            border-color: transparent;
             color: #fff;
             background: #0a2a3a;
             box-shadow: 0 0 15px #00f0ff;
@@ -297,33 +301,56 @@
             transition: all 0.2s;
             box-shadow: 0 10px 20px -10px #00000080, 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            background-clip: padding-box; /* 背景只延伸到内边距，边框区域透明 */
         }
-        .skill-card:hover, .project-card:hover, .edu-card:hover {
-            border-color: #00f0ff;
+        .skill-card:hover, .project-card:hover, .edu-card:hover, .timeline-item:hover {
+            border-color: transparent;
             box-shadow: 0 20px 30px -10px #00f0ff30, 0 0 20px #00f0ff20;
             transform: translateY(-3px);
         }
-        /* 微光动画 */
-        .skill-card::before, .project-card::before {
+        /* 边框流光动画 */
+        .skill-card::after, .project-card::after, .edu-card::after, .timeline-item::after, .left-sidebar::after, .tag::after {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: calc(28px + 3px);
+            background-image: linear-gradient(45deg, #00f0ff, #0080ff, #a020f0, #00f0ff);
+            background-size: 300% 300%;
+            z-index: 0;
             opacity: 0;
-            transition: opacity 0.5s;
+            transition: opacity 0.3s;
             pointer-events: none;
+            /* 使用mask挖空内部，只显示边框区域 */
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            padding: 3px; /* 边框宽度 */
         }
-        .skill-card:hover::before, .project-card:hover::before {
-            opacity: 0.4;
-            animation: rotateGlow 6s linear infinite;
+        .skill-card:hover::after, .project-card:hover::after, .edu-card:hover::after, .timeline-item:hover::after, .left-sidebar:hover::after, .tag:hover::after {
+            opacity: 1;
+            animation: rainbowBorder 2s linear infinite;
         }
-        @keyframes rotateGlow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        /* 为timeline-item调整圆角 */
+        .timeline-item::after {
+            border-radius: calc(20px + 3px);
+        }
+        /* 为left-sidebar调整圆角 */
+        .left-sidebar::after {
+            border-radius: calc(32px + 3px);
+        }
+        /* 为tag调整圆角 */
+        .tag::after {
+            border-radius: calc(40px + 3px);
+        }
+        @keyframes rainbowBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .skills-grid {
