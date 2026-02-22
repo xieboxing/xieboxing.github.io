@@ -561,10 +561,18 @@
 
         /* ---------- H5 兼容 ---------- */
         @media (max-width: 900px) {
+            html, body {
+                overflow-x: hidden;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+            }
             .main-wrapper {
                 flex-direction: column;
                 padding: 1rem;
                 gap: 1.5rem;
+                max-width: 100%;
             }
             .left-sidebar {
                 position: relative;
