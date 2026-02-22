@@ -604,6 +604,30 @@
                 flex-basis: 100%;
                 margin-top: 0.2rem;
             }
+            /* 专业技能卡片H5端内容溢出修复 */
+            .skill-card {
+                padding: 1.2rem 1rem;
+                max-width: 100%;
+                overflow-wrap: break-word;
+                word-break: break-word;
+                /* 保持overflow: visible以保留边框流光特效 */
+                min-height: 0; /* 允许网格项目收缩 */
+                min-width: 0; /* 防止网格项目溢出 */
+            }
+            .skill-card li {
+                font-size: 0.85rem;
+                line-height: 1.5;
+                margin-bottom: 0.5rem;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+                white-space: normal;
+            }
+            .skill-card h3 {
+                font-size: 1.1rem;
+                margin-bottom: 0.8rem;
+                flex-wrap: wrap;
+            }
         }
 
         @media (max-width: 480px) {
@@ -615,6 +639,18 @@
             }
             .section-title {
                 font-size: 1.8rem;
+            }
+            /* 小屏幕移动端专业技能卡片进一步优化 */
+            .skill-card {
+                padding: 1rem 0.8rem;
+            }
+            .skill-card h3 {
+                font-size: 1rem;
+                flex-wrap: wrap;
+            }
+            .skill-card li {
+                font-size: 0.8rem;
+                line-height: 1.4;
             }
         }
 
