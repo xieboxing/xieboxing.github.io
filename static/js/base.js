@@ -1,44 +1,74 @@
-// script.js - jQuery版本 (基于jQuery 3.5.1)
+        $(function() {
+            // 年份
+            $('#current-year').text(new Date().getFullYear());
 
-$(function() {
-    // 设置页脚当前年份
-    $('#current-year').text(new Date().getFullYear());
+            // 外部链接安全
+            $('a[href^="http"]').attr({ target: '_blank', rel: 'noopener noreferrer' });
 
-    // 控制台欢迎语
-    console.log('谢先生 · 产品经理官网 | H5深度适配 | 9年+复合经验 (jQuery版)');
-
-    // 安全处理外部链接
-    $('a[href^="http"]').attr({
-        'target': '_blank',
-        'rel': 'noopener noreferrer'
-    });
-
-    // 使用 IntersectionObserver 实现滚动淡入 (保留原生API，用jQuery操作样式)
-    var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                $(entry.target).css({
-                    'opacity': '1',
-                    'transform': 'translateY(0)'
-                });
-                observer.unobserve(entry.target);
+            // 垂直进度条
+            var $win = $(window);
+            var $doc = $(document);
+            var $fill = $('#scroll-progress-fill');
+            function updateProgress() {
+                var winH = $win.height();
+                var docH = $doc.height();
+                var scrollTop = $win.scrollTop();
+                var percent = (scrollTop / (docH - winH)) * 100;
+                percent = Math.min(100, Math.max(0, percent));
+                $fill.css('height', percent + '%');
             }
-        });
-    }, { threshold: 0.15, rootMargin: '20px' });
+            $win.on('scroll', function() { requestAnimationFrame(updateProgress); });
+            updateProgress();
 
-    // 观察卡片元素 (技能、项目、时间线项)
-    $('.skill-card, .project-card, .timeline-item').each(function() {
-        var el = this;
-        $(el).css({
-            'opacity': '0',
-            'transform': 'translateY(8px)',
-            'transition': 'opacity 0.3s ease, transform 0.25s ease'
-        });
-        observer.observe(el);
-    });
+            // 微信复制功能
+            var $copyBtn = $('.copy-wechat-btn');
+            var $toast = $('#wechat-toast');
+            var wechatId = $copyBtn.data('wechat') || 'Boxing-88888';
 
-    // 触摸优化：为可点击元素添加 touchstart 监听 (仅用于触发CSS active)
-    $('a, .contact-item, .skill-card, .project-card').on('touchstart', function(e) {
-        // 空函数，passive模式允许浏览器优化滚动
-    }, { passive: true });
-});
+            if ($copyBtn.length && $toast.length) {
+                $copyBtn.on('click', function() {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(wechatId).then(function() {
+                            showToast('微信号已复制');
+                        }).catch(function(err) {
+                            console.error('复制失败:', err);
+                            fallbackCopy(wechatId);
+                        });
+                    } else {
+                        fallbackCopy(wechatId);
+                    }
+                });
+            }
+
+            function showToast(message) {
+                $toast.find('span').text(message);
+                $toast.addClass('show');
+                setTimeout(function() {
+                    $toast.removeClass('show');
+                }, 2000);
+            }
+
+            function fallbackCopy(text) {
+                var textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    // @ts-ignore - document.execCommand is deprecated but needed for fallback support
+                    var successful = document.execCommand('copy');
+                    if (successful) {
+                        showToast('微信号已复制');
+                    } else {
+                        showToast('复制失败，请手动复制');
+                    }
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    showToast('复制失败，请手动复制');
+                }
+                document.body.removeChild(textArea);
+            }
+
+            // 移动端无进度条，但保留函数
+        });
