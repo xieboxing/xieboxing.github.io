@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费工具使用 - 个人工具导航</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 背景科技感装饰 */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .header {
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #06b6d4, #22d3ee, #06b6d4);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient 3s ease infinite;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .content-box {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(6, 182, 212, 0.1),
+                inset 0 0 20px rgba(6, 182, 212, 0.05);
+            margin-bottom: 40px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .tool-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 15px;
+            padding: 30px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: #06b6d4;
+            box-shadow:
+                0 15px 30px rgba(6, 182, 212, 0.2),
+                0 0 0 1px rgba(6, 182, 212, 0.5),
+                inset 0 0 20px rgba(6, 182, 212, 0.1);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        /* 工具名称样式 */
+        .tool-card {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #06b6d4;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            padding: 60px 40px;
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #475569;
+            margin-bottom: 20px;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% center;
+            }
+            50% {
+                background-position: 100% center;
+            }
+            100% {
+                background-position: 0% center;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .content-box {
+                padding: 30px 20px;
+            }
+
+            .tools-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .tool-card {
+                padding: 25px 20px;
+                min-height: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">免费工具使用</h1>
+            <p class="subtitle">精选个人开发工具集合 | 点击卡片在新窗口打开工具</p>
+        </header>
+
+        <main class="content-box">
+            <div id="tools-container" class="tools-grid">
+                <!-- 工具卡片将通过JavaScript动态生成 -->
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2024 个人工具开发 | 持续更新中</p>
+            <div class="footer-links">
+                <span>共 <span id="tool-count">0</span> 个工具</span>
+                <span>|</span>
+                <a href="#" class="footer-link" onclick="location.reload(); return false;">
+                    <i class="fas fa-sync-alt"></i> 刷新列表
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 工具文件数组 - 手动添加工具
+        const toolFiles = [
+            { name: '在线解析JSON', file: '在线解析JSON.html' },
+            // 可以在此处添加更多工具，格式：
+            // { name: '工具名称', file: '文件名.html' }
+        ];
+
+        $(document).ready(function() {
+            renderTools();
+            updateToolCount();
+
+            // 添加加载动画效果
+            setTimeout(() => {
+                $('.tool-card').addClass('pulse');
+                setTimeout(() => {
+                    $('.tool-card').removeClass('pulse');
+                }, 1000);
+            }, 500);
+        });
+
+        function renderTools() {
+            const container = $('#tools-container');
+            const tools = toolFiles; // 使用工具列表
+
+            if (tools.length === 0) {
+                container.html(`
+                    <div class="empty-state">
+                        <i class="fas fa-tools"></i>
+                        <h3>暂无可用工具</h3>
+                        <p>请在 toolFiles 数组中添加工具</p>
+                    </div>
+                `);
+                return;
+            }
+
+            container.empty();
+
+            tools.forEach(tool => {
+                const toolCard = $(`
+                    <div class="tool-card" data-tool="${tool.name}">
+                        ${tool.name}
+                    </div>
+                `);
+
+                toolCard.click(function() {
+                    // 在新窗口打开工具
+                    window.open(tool.file, '_blank');
+
+                    // 添加点击反馈
+                    $(this).css({
+                        'transform': 'scale(0.95)',
+                        'transition': 'transform 0.2s ease'
+                    });
+
+                    setTimeout(() => {
+                        $(this).css({
+                            'transform': '',
+                            'transition': 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                        });
+                    }, 200);
+                });
+
+                container.append(toolCard);
+            });
+        }
+
+        function updateToolCount() {
+            $('#tool-count').text(toolFiles.length);
+        }
+
+        // 工具卡片悬停效果增强
+        $(document).on('mouseenter', '.tool-card', function() {
+            $(this).css('z-index', '10');
+        }).on('mouseleave', '.tool-card', function() {
+            $(this).css('z-index', '');
+        });
+    </script>
+</body>
+</html>
