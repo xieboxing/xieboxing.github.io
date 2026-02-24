@@ -3,127 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线解析JSON工具</title>
+    <title>JSON Master Pro - Final Polished</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background: #f5f5f5;
+        :root {
+            --primary: #2563eb; --bg-body: #f8fafc; --bg-card: #ffffff;
+            --border: #e2e8f0; --text-main: #1e293b;
+            --hl-key: #7c3aed; --hl-str: #059669; --hl-num: #d97706; --hl-bool: #dc2626;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-body); color: var(--text-main); overflow: hidden; }
+
+        header {
+            height: 64px; background: var(--bg-card); display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #06b6d4;
-            padding-bottom: 10px;
+        .brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        
+        .toolbar { display: flex; align-items: center; gap: 8px; }
+        .btn {
+            padding: 8px 14px; border: 1px solid var(--border); background: white; border-radius: 6px;
+            font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
         }
-        textarea {
-            width: 100%;
-            height: 200px;
-            margin: 10px 0;
-            padding: 10px;
-            font-family: 'Consolas', monospace;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            resize: vertical;
-        }
-        button {
-            background: #06b6d4;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background: #22d3ee;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8fafc;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: 'Consolas', monospace;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .error {
-            color: #dc2626;
-            background: #fef2f2;
-            border-color: #fca5a5;
-        }
+        .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-xml { background: #f59e0b; color: white; border-color: #d97706; }
+        .btn-xml:hover { background: #d97706; }
+
+        main { display: flex; height: calc(100% - 64px); padding: 16px; gap: 16px; }
+        .panel { flex: 1; display: flex; flex-direction: column; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+        .panel-header { padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: #64748b; display: flex; justify-content: space-between; }
+
+        #json-input { flex: 1; border: none; outline: none; padding: 16px; font-family: 'Consolas', monospace; font-size: 14px; line-height: 1.6; resize: none; }
+        #viewer-container { flex: 1; overflow: auto; padding: 16px; font-family: 'Consolas', monospace; font-size: 14px; position: relative; background: #fff; }
+
+        .node { line-height: 1.6; }
+        .line { white-space: nowrap; display: flex; align-items: center; padding: 1px 0; }
+        .indent { margin-left: 22px; border-left: 1px solid #f1f5f9; }
+        .toggle { cursor: pointer; width: 20px; color: #94a3b8; transition: 0.2s; display: inline-flex; justify-content: center; }
+        .toggle:hover { color: var(--primary); }
+        .collapsed .indent { display: none; }
+        .collapsed .toggle { transform: rotate(-90deg); }
+        
+        .hl-key { color: var(--hl-key); font-weight: 600; margin-right: 4px; }
+        .hl-str { color: var(--hl-str); }
+        .hl-num { color: var(--hl-num); }
+        .hl-bool { color: var(--hl-bool); }
+        .bracket { color: #475569; font-weight: 600; }
+        
+        .text-view { white-space: pre-wrap; word-break: break-all; color: #334155; line-height: 1.7; }
+        #error-overlay { position: absolute; top: 16px; left: 16px; right: 16px; background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 6px; border: 1px solid #fee2e2; font-size: 13px; display: none; z-index: 10; }
+        #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 20px; border-radius: 20px; font-size: 13px; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>在线解析JSON工具</h1>
-        <p>输入JSON字符串，工具将验证格式并美化显示</p>
 
-        <textarea id="jsonInput" placeholder='输入JSON字符串，例如：{"name": "示例", "version": 1, "features": ["解析", "格式化"]}'></textarea>
-
-        <div>
-            <button onclick="parseJSON()">解析JSON</button>
-            <button onclick="formatJSON()">格式化</button>
-            <button onclick="clearAll()">清除</button>
+    <header>
+        <div class="brand"><i class="fa-solid fa-code-merge"></i> <span>JSON Master</span></div>
+        <div class="toolbar">
+            <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-right: 10px;">
+                <input type="checkbox" id="keep-escape" checked> 保留转义
+            </label>
+            <div style="width:1px; height:20px; background:#e2e8f0; margin:0 10px;"></div>
+            <button class="btn active" id="mode-tree"><i class="fa-solid fa-list-tree"></i> 可视化美化</button>
+            <button class="btn" id="mode-minify"><i class="fa-solid fa-compress"></i> 压缩预览</button>
+            <button class="btn btn-xml" id="mode-xml"><i class="fa-solid fa-file-code"></i> 转 XML 视图</button>
+            <div style="width:1px; height:20px; background:#e2e8f0; margin:0 10px;"></div>
+            <button class="btn" id="btn-copy-view"><i class="fa-solid fa-copy"></i> 复制预览内容</button>
+            <button class="btn" id="btn-clear" style="color:#ef4444"><i class="fa-solid fa-trash-can"></i> 清空</button>
         </div>
+    </header>
 
-        <div id="result" class="result"></div>
-    </div>
+    <main>
+        <div class="panel">
+            <div class="panel-header">SOURCE JSON (源码输入)</div>
+            <textarea id="json-input" spellcheck="false" placeholder="粘贴 JSON 到这里..."></textarea>
+        </div>
+        <div class="panel">
+            <div class="panel-header">PREVIEW (只读预览) <span id="view-mode-label" style="color:var(--primary)">[TREE]</span></div>
+            <div id="viewer-container">
+                <div id="error-overlay"></div>
+                <div id="view-content"></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast">已成功复制</div>
 
     <script>
-        function parseJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const resultDiv = document.getElementById('result');
+        $(document).ready(function() {
+            const $input = $('#json-input');
+            const $content = $('#view-content');
+            const $error = $('#error-overlay');
+            const $escape = $('#keep-escape');
+            let currentMode = 'tree';
 
-            if (!input.trim()) {
-                resultDiv.innerHTML = '<span style="color: #666;">请输入JSON字符串</span>';
-                return;
+            // --- 核心修复：处理字符串显示的逻辑 ---
+            function processValue(str) {
+                if (!$escape.is(':checked')) return str;
+                // 仅在勾选时，将内存中的特殊字符可视化
+                return str
+                    .replace(/\\/g, "\\\\")
+                    .replace(/"/g, '\\"')
+                    .replace(/\n/g, "\\n")
+                    .replace(/\r/g, "\\r")
+                    .replace(/\t/g, "\\t");
             }
 
-            try {
-                const parsed = JSON.parse(input);
-                resultDiv.innerHTML = JSON.stringify(parsed, null, 2);
-                resultDiv.classList.remove('error');
-            } catch (error) {
-                resultDiv.innerHTML = `解析错误: ${error.message}`;
-                resultDiv.classList.add('error');
+            function updateView() {
+                const raw = $input.val().trim();
+                if (!raw) { $content.empty(); $error.hide(); return; }
+
+                try {
+                    const obj = JSON.parse(raw);
+                    $error.hide();
+                    renderByMode(obj);
+                } catch (e) {
+                    $error.html('<strong>解析错误:</strong><br>' + e.message).show();
+                    $content.empty();
+                }
             }
-        }
 
-        function formatJSON() {
-            const input = document.getElementById('jsonInput').value;
-            const resultDiv = document.getElementById('result');
-
-            try {
-                const parsed = JSON.parse(input);
-                document.getElementById('jsonInput').value = JSON.stringify(parsed, null, 2);
-                resultDiv.innerHTML = '<span style="color: #10b981;">JSON已格式化</span>';
-                resultDiv.classList.remove('error');
-            } catch (error) {
-                resultDiv.innerHTML = `格式化前请先输入有效的JSON: ${error.message}`;
-                resultDiv.classList.add('error');
+            function renderByMode(obj) {
+                $content.empty();
+                if (currentMode === 'tree') {
+                    $content.append(parseNode(null, obj, true));
+                } else if (currentMode === 'minify') {
+                    const minified = JSON.stringify(obj);
+                    // 压缩模式下也支持转义可视化显示
+                    const displayMin = $escape.is(':checked') ? minified.replace(/\\/g, "\\\\") : minified;
+                    const $div = $('<div class="text-view"></div>').text(displayMin);
+                    $content.append($div);
+                } else if (currentMode === 'xml') {
+                    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<root>' + jsonToXml(obj, 1) + '\n</root>';
+                    const $div = $('<div class="text-view"></div>').text(xml);
+                    $content.append($div);
+                }
             }
-        }
 
-        function clearAll() {
-            document.getElementById('jsonInput').value = '';
-            document.getElementById('result').innerHTML = '';
-            document.getElementById('result').classList.remove('error');
-        }
+            function parseNode(key, value, isLast) {
+                const $node = $('<div class="node"></div>');
+                const $line = $('<div class="line"></div>');
+                const type = typeof value;
+                const isComplex = value !== null && type === 'object';
 
-        // 页面加载时显示示例
-        window.onload = function() {
-            document.getElementById('jsonInput').value = '{"name": "JSON解析工具", "version": 1, "features": ["格式验证", "美化显示", "错误提示"], "author": "个人工具开发"}';
-        };
+                if (key !== null) {
+                    $line.append($('<span class="hl-key"></span>').text(`"${key}"`)).append('<span class="bracket">: </span>');
+                }
+
+                if (isComplex) {
+                    const isArr = Array.isArray(value);
+                    const open = isArr ? '[' : '{';
+                    const close = isArr ? ']' : '}';
+                    const keys = Object.keys(value);
+
+                    $line.prepend('<span class="toggle"><i class="fa-solid fa-caret-down"></i></span>');
+                    $line.append($('<span class="bracket"></span>').text(open));
+                    
+                    const $indent = $('<div class="indent"></div>');
+                    keys.forEach((k, i) => $indent.append(parseNode(isArr ? null : k, value[k], i === keys.length - 1)));
+                    
+                    $node.append($line).append($indent);
+                    const $endLine = $('<div class="line"></div>').css('padding-left', '20px');
+                    $endLine.append($('<span class="bracket"></span>').text(close + (isLast ? '' : ',')));
+                    $node.append($endLine);
+
+                    $line.find('.toggle').click(function() { $node.toggleClass('collapsed'); });
+                } else {
+                    let cls = 'hl-null', valStr = 'null';
+                    if (value !== null) {
+                        if (type === 'string') {
+                            cls = 'hl-str';
+                            valStr = `"${processValue(value)}"`;
+                        } else if (type === 'number') { cls = 'hl-num'; valStr = value; }
+                        else if (type === 'boolean') { cls = 'hl-bool'; valStr = value; }
+                    }
+                    const $valSpan = $(`<span class="${cls}"></span>`).text(valStr);
+                    $line.css('padding-left', '24px').append($valSpan);
+                    if (!isLast) $line.append('<span class="bracket">,</span>');
+                    $node.append($line);
+                }
+                return $node;
+            }
+
+            function jsonToXml(obj, level) {
+                let xml = ""; const pad = "  ".repeat(level);
+                for (let key in obj) {
+                    let val = obj[key]; let tag = Array.isArray(obj) ? "item" : key;
+                    if (/^\d/.test(tag)) tag = "node_" + tag;
+                    xml += `\n${pad}<${tag}>`;
+                    if (typeof val === 'object' && val !== null) {
+                        xml += jsonToXml(val, level + 1) + `\n${pad}`;
+                    } else {
+                        xml += (typeof val === 'string') ? processValue(val) : val;
+                    }
+                    xml += `</${tag}>`;
+                }
+                return xml;
+            }
+
+            // --- 复制展示区内容的逻辑 ---
+            function copyToClipboard(text) {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textArea);
+                $('#toast').text('预览内容已复制').fadeIn().delay(1000).fadeOut();
+            }
+
+            $('#btn-copy-view').click(function() {
+                if (currentMode === 'tree') {
+                    // 树形模式下，我们复制经过格式化后的字符串
+                    try {
+                        const obj = JSON.parse($input.val());
+                        const formatted = JSON.stringify(obj, null, 4);
+                        copyToClipboard($escape.is(':checked') ? formatted.replace(/\\/g, "\\\\") : formatted);
+                    } catch(e) { copyToClipboard($input.val()); }
+                } else {
+                    // 压缩和 XML 模式直接获取 DOM 文本
+                    copyToClipboard($content.text());
+                }
+            });
+
+            // 模式切换
+            $('.toolbar .btn[id^="mode-"]').click(function() {
+                $('.toolbar .btn').removeClass('active');
+                $(this).addClass('active');
+                currentMode = $(this).attr('id').replace('mode-', '');
+                $('#view-mode-label').text(`[${currentMode.toUpperCase()}]`);
+                updateView();
+            });
+
+            // 2. 修复：取消勾选时立即触发更新
+            $escape.on('change', updateView);
+            $input.on('input', updateView);
+
+            $('#btn-clear').click(function() { $input.val('').focus(); updateView(); });
+
+            // 初始化测试数据
+            const example = {
+                "special_chars": ["&currency", "&timestamp", "&region", "&lt;&lt;sane&gt;&gt;"],
+                "multiline": "这是第一行\n这是第二行",
+                "status": "Ready"
+            };
+            $input.val(JSON.stringify(example, null, 4));
+            updateView();
+        });
     </script>
 </body>
 </html>

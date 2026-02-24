@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD5加密工具</title>
+    <!-- Tailwind CSS v3 CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Crypto-JS (MD5加密库) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        /* 自定义复制提示样式 */
+        .copy-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 9999;
+        }
+        .copy-toast.show {
+            opacity: 1;
+        }
+        /* 输入来源提示样式 */
+        .input-hint {
+            font-size: 10px; /* 进一步缩小提示文字 */
+            color: #6b7280;
+            margin-left: 4px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-2 md:p-4"> <!-- 减少页面整体内边距 -->
+    <!-- 复制成功提示 -->
+    <div class="copy-toast" id="copyToast">复制成功！</div>
+
+    <!-- 主容器 -->
+    <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="p-3 md:p-4 md:flex md:gap-4"> <!-- 减少主容器内边距、缩小列间距 -->
+            <!-- 左侧输入区域 -->
+            <div class="md:w-1/2 mb-3 md:mb-0"> <!-- 减少底部间距 -->
+                <h2 class="text-lg font-bold text-gray-800 mb-2">输入需要加密的文本</h2> <!-- 缩小标题字体、减少间距 -->
+                <!-- 文本输入框：大幅降低高度，适配笔记本屏幕 -->
+                <textarea 
+                    id="inputText" 
+                    class="w-full h-24 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    placeholder="请输入需要进行MD5加密的文本..."></textarea>
+                
+                <!-- 功能按钮组：缩小按钮尺寸 -->
+                <div class="mt-2 flex flex-wrap gap-2"> <!-- 减少按钮间距 -->
+                    <button id="encryptBtn" class="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        加密
+                    </button>
+                    <button id="demoBtn" class="px-4 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                        来个 Demo
+                    </button>
+                    <button id="clearBtn" class="px-4 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧结果展示区域 -->
+            <div class="md:w-1/2">
+                <h2 class="text-lg font-bold text-gray-800 mb-2">递进加密结果（共3次）</h2> <!-- 缩小标题字体、减少间距 -->
+                <div id="resultContainer" class="space-y-2"> <!-- 大幅减少结果卡片之间的间距 -->
+                    <!-- 加密结果会动态生成在这里 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // ---------------- 核心加密函数 ----------------
+            function generateMD5(text) {
+                const md5_32_lower = CryptoJS.MD5(text).toString();
+                const md5_32_upper = md5_32_lower.toUpperCase();
+                const md5_16_lower = md5_32_lower.substring(8, 24);
+                const md5_16_upper = md5_16_lower.toUpperCase();
+
+                return {
+                    md5_32_upper,
+                    md5_32_lower,
+                    md5_16_upper,
+                    md5_16_lower
+                };
+            }
+
+            // ---------------- 渲染加密结果 ----------------
+            function renderProgressiveResults(originalText) {
+                $('#resultContainer').empty();
+
+                const step1 = generateMD5(originalText);
+                const step2 = {
+                    md5_32_upper: generateMD5(step1.md5_32_upper).md5_32_upper,
+                    md5_32_lower: generateMD5(step1.md5_32_lower).md5_32_lower,
+                    md5_16_upper: generateMD5(step1.md5_16_upper).md5_16_upper,
+                    md5_16_lower: generateMD5(step1.md5_16_lower).md5_16_lower
+                };
+                const step3 = {
+                    md5_32_upper: generateMD5(step2.md5_32_upper).md5_32_upper,
+                    md5_32_lower: generateMD5(step2.md5_32_lower).md5_32_lower,
+                    md5_16_upper: generateMD5(step2.md5_16_upper).md5_16_upper,
+                    md5_16_lower: generateMD5(step2.md5_16_lower).md5_16_lower
+                };
+
+                // 生成单步结果的HTML：减少卡片内边距、缩小元素间距、适配窄屏
+                function getStepHtml(stepNum, results) {
+                    const hints = {
+                        1: {
+                            md5_32_upper: `原始文本: ${originalText}`,
+                            md5_32_lower: `原始文本: ${originalText}`,
+                            md5_16_upper: `原始文本: ${originalText}`,
+                            md5_16_lower: `原始文本: ${originalText}`
+                        },
+                        2: {
+                            md5_32_upper: `第1次32大写: ${step1.md5_32_upper.substring(0, 10)}...`,
+                            md5_32_lower: `第1次32小写: ${step1.md5_32_lower.substring(0, 10)}...`,
+                            md5_16_upper: `第1次16大写: ${step1.md5_16_upper}`,
+                            md5_16_lower: `第1次16小写: ${step1.md5_16_lower}`
+                        },
+                        3: {
+                            md5_32_upper: `第2次32大写: ${step2.md5_32_upper.substring(0, 10)}...`,
+                            md5_32_lower: `第2次32小写: ${step2.md5_32_lower.substring(0, 10)}...`,
+                            md5_16_upper: `第2次16大写: ${step2.md5_16_upper}`,
+                            md5_16_lower: `第2次16小写: ${step2.md5_16_lower}`
+                        }
+                    };
+
+                    return `
+                        <div id="step-${stepNum}" class="p-2 border border-gray-200 rounded-lg bg-gray-50"> <!-- 减少卡片内边距 -->
+                            <h3 class="font-semibold text-gray-700 mb-1 text-sm">第 ${stepNum} 次加密</h3> <!-- 缩小标题、减少间距 -->
+                            <div class="space-y-1"> <!-- 减少格式项之间的间距 -->
+                                <!-- 32位大写：黑色 -->
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <span class="text-xs text-gray-600">32位大写：</span> <!-- 缩小标签字体 -->
+                                        <div class="input-hint">${hints[stepNum].md5_32_upper}</div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-mono bg-gray-200 px-1.5 py-0.5 rounded w-56 truncate text-black">${results.md5_32_upper}</span> <!-- 缩小字体、宽度、内边距 -->
+                                        <i class="fas fa-copy ml-1 text-blue-500 hover:text-blue-700 cursor-pointer copy-icon text-xs" data-text="${results.md5_32_upper}"></i> <!-- 缩小图标 -->
+                                    </div>
+                                </div>
+                                <!-- 32位小写：橙色 -->
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <span class="text-xs text-gray-600">32位小写：</span>
+                                        <div class="input-hint">${hints[stepNum].md5_32_lower}</div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-mono bg-gray-200 px-1.5 py-0.5 rounded w-56 truncate text-orange-600">${results.md5_32_lower}</span>
+                                        <i class="fas fa-copy ml-1 text-blue-500 hover:text-blue-700 cursor-pointer copy-icon text-xs" data-text="${results.md5_32_lower}"></i>
+                                    </div>
+                                </div>
+                                <!-- 16位大写：保留原有红色 -->
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <span class="text-xs text-gray-600">16位大写：</span>
+                                        <div class="input-hint">${hints[stepNum].md5_16_upper}</div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-mono bg-gray-200 px-1.5 py-0.5 rounded w-56 truncate font-bold text-red-600">${results.md5_16_upper}</span>
+                                        <i class="fas fa-copy ml-1 text-blue-500 hover:text-blue-700 cursor-pointer copy-icon text-xs" data-text="${results.md5_16_upper}"></i>
+                                    </div>
+                                </div>
+                                <!-- 16位小写：紫色 -->
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <span class="text-xs text-gray-600">16位小写：</span>
+                                        <div class="input-hint">${hints[stepNum].md5_16_lower}</div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-mono bg-gray-200 px-1.5 py-0.5 rounded w-56 truncate text-purple-600">${results.md5_16_lower}</span>
+                                        <i class="fas fa-copy ml-1 text-blue-500 hover:text-blue-700 cursor-pointer copy-icon text-xs" data-text="${results.md5_16_lower}"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                $('#resultContainer')
+                    .append(getStepHtml(1, step1))
+                    .append(getStepHtml(2, step2))
+                    .append(getStepHtml(3, step3));
+            }
+
+            // ---------------- 复制功能 ----------------
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const toast = $('#copyToast');
+                    toast.addClass('show');
+                    setTimeout(() => {
+                        toast.removeClass('show');
+                    }, 2000);
+                }).catch(err => {
+                    alert('复制失败：' + err);
+                });
+            }
+
+            // ---------------- 事件绑定 ----------------
+            $('#encryptBtn').click(function() {
+                const inputText = $('#inputText').val().trim();
+                if (!inputText) {
+                    alert('请输入需要加密的文本！');
+                    return;
+                }
+                renderProgressiveResults(inputText);
+            });
+
+            $('#demoBtn').click(function() {
+                $('#inputText').val('123');
+            });
+
+            $('#clearBtn').click(function() {
+                $('#inputText').val('');
+                $('#resultContainer').empty();
+            });
+
+            $(document).on('click', '.copy-icon', function() {
+                const text = $(this).data('text');
+                copyToClipboard(text);
+            });
+        });
+    </script>
+</body>
+</html>
