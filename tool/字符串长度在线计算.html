@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线字符串长度统计工具</title>
+    <!-- 引入Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- 引入Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 自定义基础样式，提升交互体验 */
+        textarea:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        .stat-card {
+            transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">在线字符串长度统计工具</h1>
+        
+        <!-- 核心布局：左右分区，响应式适配 -->
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- 左侧输入区 -->
+            <div class="w-full md:w-1/2">
+                <label for="inputString" class="block text-gray-700 font-medium mb-2">请输入需要统计的字符串：</label>
+                <textarea 
+                    id="inputString" 
+                    class="w-full h-[400px] p-4 border border-gray-300 rounded-lg resize-y bg-white"
+                    placeholder="请输入需要统计的字符串...（无长度限制，输入时实时统计）"
+                ></textarea>
+            </div>
+
+            <!-- 右侧统计结果区 -->
+            <div class="w-full md:w-1/2">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">统计结果</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <!-- 总字符数 -->
+                    <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-chars text-blue-500 text-lg"></i>
+                                <span class="text-gray-700 font-medium">字符共计：</span>
+                            </div>
+                            <span id="totalChars" class="text-2xl font-bold text-blue-600">0</span>
+                        </div>
+                    </div>
+
+                    <!-- 中文总数 -->
+                    <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-language text-green-500 text-lg"></i>
+                                <span class="text-gray-700 font-medium">中文总数：</span>
+                            </div>
+                            <span id="chineseChars" class="text-2xl font-bold text-green-600">0</span>
+                        </div>
+                    </div>
+
+                    <!-- 英文总数 -->
+                    <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-globe text-purple-500 text-lg"></i>
+                                <span class="text-gray-700 font-medium">英文总数：</span>
+                            </div>
+                            <span id="englishChars" class="text-2xl font-bold text-purple-600">0</span>
+                        </div>
+                    </div>
+
+                    <!-- 数字总数 -->
+                    <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-hashtag text-orange-500 text-lg"></i>
+                                <span class="text-gray-700 font-medium">数字总数：</span>
+                            </div>
+                            <span id="numberChars" class="text-2xl font-bold text-orange-600">0</span>
+                        </div>
+                    </div>
+
+                    <!-- 符号总数 -->
+                    <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-symbol text-red-500 text-lg"></i>
+                                <span class="text-gray-700 font-medium">符号总数：</span>
+                            </div>
+                            <span id="symbolChars" class="text-2xl font-bold text-red-600">0</span>
+                        </div>
+                    </div>
+
+                    <!-- 占位长度 -->
+                    <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="fa-solid fa-ruler-horizontal text-indigo-500 text-lg"></i>
+                                <span class="text-gray-700 font-medium">占位长度：</span>
+                            </div>
+                            <span id="placeholderLength" class="text-2xl font-bold text-indigo-600 self-end">0 (中文占2，其他占1)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            /**
+             * 核心统计函数：计算字符串各维度数据
+             * @param {string} str - 输入的原始字符串
+             * @returns {object} 包含所有统计维度的结果对象
+             */
+            function calculateStringStats(str) {
+                // 初始化统计结果
+                let stats = {
+                    total: 0,        // 总字符数
+                    chinese: 0,      // 中文字符数
+                    english: 0,      // 英文字母数
+                    number: 0,       // 数字数
+                    symbol: 0,       // 符号数
+                    placeholder: 0   // 占位长度
+                };
+
+                // 空字符串直接返回初始值
+                if (!str) return stats;
+
+                // 总字符数 = 字符串长度
+                stats.total = str.length;
+
+                // 遍历每个字符，分类统计
+                for (let char of str) {
+                    if (/[\u4e00-\u9fa5]/.test(char)) {
+                        // 匹配中文字符（仅[\u4e00-\u9fa5]范围）
+                        stats.chinese++;
+                    } else if (/[a-zA-Z]/.test(char)) {
+                        // 匹配英文字母
+                        stats.english++;
+                    } else if (/[0-9]/.test(char)) {
+                        // 匹配数字
+                        stats.number++;
+                    } else if (!/\s/.test(char)) {
+                        // 匹配符号（非中文、非英文、非数字、非空格）
+                        stats.symbol++;
+                    }
+                    // 空格不单独统计，仅计入总字符数
+                }
+
+                // 计算占位长度：中文*2 + (总字符数 - 中文数)*1
+                stats.placeholder = stats.chinese * 2 + (stats.total - stats.chinese);
+
+                return stats;
+            }
+
+            /**
+             * 更新统计结果到DOM
+             * @param {object} stats - 统计结果对象
+             */
+            function updateStatsDOM(stats) {
+                $('#totalChars').text(stats.total);
+                $('#chineseChars').text(stats.chinese);
+                $('#englishChars').text(stats.english);
+                $('#numberChars').text(stats.number);
+                $('#symbolChars').text(stats.symbol);
+                $('#placeholderLength').text(`${stats.placeholder} (中文字符按2个字符宽度，其他按1个字符宽度计算)`);
+            }
+
+            /**
+             * 实时监听输入事件：输入/删除/粘贴时立即统计
+             */
+            $('#inputString').on('input', function() {
+                let inputValue = $(this).val();
+                let stats = calculateStringStats(inputValue);
+                updateStatsDOM(stats);
+            });
+
+            // 页面初始化时强制更新一次（确保初始值为0）
+            updateStatsDOM(calculateStringStats(''));
+        });
+    </script>
+</body>
+</html>
