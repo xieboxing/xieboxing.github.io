@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线URL编码解码</title>
+    <!-- 引入 jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        /* 全局样式重置与基础设置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f4f6; /* 浅灰背景，营造科技简约感 */
+            color: #1f2937;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        /* 容器样式，居中并限制最大宽度 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 页面标题 */
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            color: #111827;
+            font-weight: 700;
+        }
+
+        /* 输入输出文本框通用样式 */
+        textarea {
+            width: 100%;
+            height: 120px; /* 按要求设置高度 */
+            padding: 12px;
+            border: 2px solid #d1d5db; /* 明显的边框 */
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            resize: vertical;
+            margin-bottom: 20px;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6; /* 聚焦时的蓝色边框 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* 按钮区域容器 */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        /* 按钮通用样式 */
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        /* 按钮 Hover 效果 */
+        button:hover {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* 主按钮组：编码/解码按钮 */
+        .action-btn.encode {
+            /* 默认编码按钮样式：白色背景浅灰边框 */
+        }
+
+        .action-btn.decode {
+            background-color: #10b981; /* 绿色解码按钮 */
+            color: #ffffff;
+            border-color: #10b981;
+        }
+
+        .action-btn.decode:hover {
+            background-color: #059669;
+            border-color: #059669;
+        }
+
+        /* 选中状态的按钮样式 */
+        .action-btn.active {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border-color: #3b82f6;
+        }
+        
+        .action-btn.active:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+
+        /* 控制区域：下拉框和复选框 */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        /* 多行模式复选框样式 */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #4b5563;
+        }
+
+        /* 备注说明区域 */
+        .notes {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .notes h3 {
+            margin-bottom: 10px;
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        .notes ul {
+            padding-left: 20px;
+        }
+
+        /* 简单的 Toast 提示样式 */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 1rem;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>在线URL编码解码</h1>
+
+    <!-- 输入区域 -->
+    <textarea id="inputArea" placeholder="请粘贴URL或需要编解码的文本内容..."></textarea>
+
+    <!-- 功能按钮区 -->
+    <div class="button-group">
+        <!-- 主按钮组 -->
+        <button class="action-btn encode" id="encodeBtn">URL编码</button>
+        <button class="action-btn decode" id="decodeBtn">URL解码</button>
+        
+        <div style="width: 1px; height: 24px; background: #e5e7eb; margin: 0 5px;"></div>
+
+        <!-- 辅助按钮组 -->
+        <button id="demoBtn">来个Demo</button>
+        <button id="copyBtn">复制</button>
+        <!-- <button id="downloadBtn">下载</button> -->
+    </div>
+
+    <!-- 编码模式选择区 & 选项区 -->
+    <div class="controls">
+        <div class="control-item">
+            <label for="encodeMode">编码模式：</label>
+            <select id="encodeMode">
+                <option value="encodeURI">encodeURI编码</option>
+                <option value="encodeURIComponent">encodeURIComponent编码</option>
+            </select>
+        </div>
+        <!-- <div class="control-item">
+            <input type="checkbox" id="multilineMode">
+            <label for="multilineMode">多行模式</label>
+        </div> -->
+    </div>
+
+    <!-- 输出区域 -->
+    <textarea id="outputArea" readonly placeholder="结果将显示在这里..."></textarea>
+
+    <!-- 备注说明 -->
+    <div class="notes">
+        <h3>说明：</h3>
+        <ul>
+            <li><strong>encodeURI：</strong> 主要用于完整的 URL 编码，不会对 `; , / ? : @ & = + $ #` 等字符进行编码。</li>
+            <li><strong>encodeURIComponent：</strong> 会对除了字母、数字、`- _ . ! ~ * ' ( )` 之外的所有字符进行编码，适用于编码 URL 参数。</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Toast 提示元素 -->
+<div id="toast">复制成功！</div>
+
+<script>
+    $(document).ready(function() {
+        // 缓存 DOM 元素，提高性能
+        const $inputArea = $('#inputArea');
+        const $outputArea = $('#outputArea');
+        const $encodeMode = $('#encodeMode');
+        const $multilineMode = $('#multilineMode');
+        const $encodeBtn = $('#encodeBtn');
+        const $decodeBtn = $('#decodeBtn');
+        const $toast = $('#toast');
+
+        // 默认操作类型：'encode' 或 'decode'
+        let currentAction = 'encode';
+
+        // --- 核心逻辑函数 ---
+
+        /**
+         * 处理文本（编码或解码）
+         * @param {string} text - 输入文本
+         * @param {string} action - 操作类型 'encode' 或 'decode'
+         * @param {string} mode - 编码模式 'encodeURI' 或 'encodeURIComponent'
+         * @param {boolean} isMultiline - 是否多行模式
+         * @returns {string} 处理后的文本
+         */
+        function processText(text, action, mode, isMultiline) {
+            if (!text) return '';
+
+            try {
+                if (isMultiline) {
+                    // 按行分割，逐行处理
+                    const lines = text.split(/\r?\n/);
+                    const processedLines = lines.map(line => {
+                        return line ? processSingleLine(line, action, mode) : line;
+                    });
+                    return processedLines.join('\n');
+                } else {
+                    return processSingleLine(text, action, mode);
+                }
+            } catch (e) {
+                return '处理出错：请检查输入格式是否正确。';
+            }
+        }
+
+        /**
+         * 处理单行字符串
+         */
+        function processSingleLine(str, action, mode) {
+            if (action === 'encode') {
+                if (mode === 'encodeURI') {
+                    return encodeURI(str);
+                } else {
+                    return encodeURIComponent(str);
+                }
+            } else {
+                // 解码时，尝试使用最彻底的 decodeURIComponent
+                return decodeURIComponent(str);
+            }
+        }
+
+        /**
+         * 更新输出区域
+         */
+        function updateOutput() {
+            const input = $inputArea.val();
+            const mode = $encodeMode.val();
+            const isMultiline = $multilineMode.is(':checked');
+            
+            const result = processText(input, currentAction, mode, isMultiline);
+            $outputArea.val(result);
+        }
+
+        /**
+         * 显示 Toast 提示
+         */
+        function showToast(message) {
+            $toast.text(message);
+            $toast.addClass('show');
+            setTimeout(function() {
+                $toast.removeClass('show');
+            }, 3000);
+        }
+
+        // --- 事件绑定 ---
+
+        // 输入框内容变化时实时更新
+        $inputArea.on('input', updateOutput);
+        $encodeMode.on('change', updateOutput);
+        $multilineMode.on('change', updateOutput);
+
+        // 编码按钮点击
+        $encodeBtn.on('click', function() {
+            currentAction = 'encode';
+            // 切换按钮高亮状态
+            $decodeBtn.removeClass('active');
+            $encodeBtn.addClass('active');
+            updateOutput();
+        });
+
+        // 解码按钮点击
+        $decodeBtn.on('click', function() {
+            currentAction = 'decode';
+            // 切换按钮高亮状态
+            $encodeBtn.removeClass('active');
+            $decodeBtn.addClass('active');
+            updateOutput();
+        });
+
+        // 来个 Demo
+        $('#demoBtn').on('click', function() {
+            const demoUrl = 'https://www.chuangzaoAI.cn/?name=测试&age=18';
+            $inputArea.val(demoUrl);
+            // 默认切回编码模式
+            $encodeBtn.click(); 
+        });
+
+        // 复制结果
+        $('#copyBtn').on('click', function() {
+            const output = $outputArea.val();
+            if (!output) {
+                showToast('没有内容可复制');
+                return;
+            }
+            
+            // 使用原生 API 复制
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(output).then(function() {
+                    showToast('复制成功！');
+                }, function() {
+                    fallbackCopy();
+                });
+            } else {
+                fallbackCopy();
+            }
+
+            function fallbackCopy() {
+                $outputArea.select();
+                document.execCommand('copy');
+                showToast('复制成功！');
+            }
+        });
+
+        // 下载文件
+        $('#downloadBtn').on('click', function() {
+            const output = $outputArea.val();
+            if (!output) {
+                showToast('没有内容可下载');
+                return;
+            }
+
+            const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'url-result.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('文件已开始下载');
+        });
+
+        // --- 初始化 ---
+        // 默认选中编码按钮
+        $encodeBtn.addClass('active');
+    });
+</script>
+
+</body>
+</html>
