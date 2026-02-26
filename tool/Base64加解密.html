@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线Base64编码解码 · 工具站</title>
+    <!-- jQuery (必须) -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f2f5fc 0%, #e9eef4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .tool-container {
+            max-width: 880px;
+            width: 100%;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px -10px rgba(0, 20, 50, 0.2), 0 4px 12px rgba(0,0,0,0.05);
+            padding: 32px;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* 标题区简洁 */
+        .tool-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #0b1e3a;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-title span {
+            background: #1677ff;
+            color: white;
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-weight: 400;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            margin-bottom: 24px;
+        }
+        .section-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e2f4e;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-label .hint {
+            color: #5f6c84;
+            font-weight: 400;
+            font-size: 13px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 16px 18px;
+            background: #ffffff;
+            border: 1.5px solid #d9e0eb;
+            border-radius: 20px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            color: #17212d;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+        }
+        textarea:focus {
+            border-color: #1677ff;
+            box-shadow: 0 0 0 4px rgba(22,119,255,0.15);
+        }
+
+        /* 按钮栏 */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            background: #f1f4f9;
+            padding: 4px;
+            border-radius: 40px;
+        }
+        .btn {
+            border: none;
+            padding: 8px 22px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: white;
+            border: 1px solid #d0d8e6;
+            color: #1f2a44;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn.primary {
+            background: #1677ff;
+            border: 1px solid #1677ff;
+            color: white;
+            box-shadow: 0 6px 12px -6px rgba(22,119,255,0.4);
+        }
+        .btn.primary:hover {
+            background: #0b5fd9;
+            border-color: #0b5fd9;
+            transform: translateY(-1px);
+        }
+        .btn.secondary:hover {
+            background: #e5ecf5;
+            border-color: #b7c2d6;
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+        .shortcut-hint {
+            margin-left: auto;
+            font-size: 13px;
+            background: #e5ebf3;
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: #2c3e5c;
+            letter-spacing: 0.2px;
+            border: 1px solid #cdd6e4;
+        }
+
+        /* 输出区域 */
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .output-header-left {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0b1e3a;
+        }
+        .output-options {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .output-options label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #1f2e4a;
+            cursor: pointer;
+        }
+        .copy-btn {
+            background: white;
+            border: 1px solid #cbd3e2;
+            border-radius: 24px;
+            padding: 5px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e2f4e;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .copy-btn:hover {
+            background: #e9f0fa;
+            border-color: #1677ff;
+            color: #1677ff;
+        }
+        .copy-btn.copied {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+        #outputText {
+            background: #ffffff;
+            border-color: #d9e0eb;
+        }
+
+        /* 辅助 */
+        .separator {
+            height: 1px;
+            background: linear-gradient(to right, #d0dae8, transparent);
+            margin: 16px 0 10px 0;
+        }
+        .footer-note {
+            text-align: right;
+            font-size: 12px;
+            color: #6d7b99;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="tool-container">
+        <!-- 头部标识，简约科技感 -->
+        <div class="tool-title">
+            ⚡ Base64 编码/解码
+            <span>UTF-8 ✓</span>
+        </div>
+
+        <!-- 1. 输入区域 -->
+        <div class="input-section">
+            <div class="section-label">
+                <span>📥 请输入要进行 Base64 编码或解码的字符</span>
+                <span class="hint">支持换行 · 自动去空白(解码)</span>
+            </div>
+            <textarea id="inputText" placeholder="例如: Hello 世界 或 5L2g5aW9  ..."></textarea>
+        </div>
+
+        <!-- 2. 操作按钮区 -->
+        <div class="action-bar">
+            <div class="btn-group">
+                <button id="encodeBtn" class="btn primary" data-mode="encode">编码 (Encode)</button>
+                <button id="decodeBtn" class="btn secondary" data-mode="decode">解码 (Decode)</button>
+                <button id="swapBtn" class="btn secondary">⇄ 交换</button>
+            </div>
+            <div class="shortcut-hint">
+                ⌘ + Enter (编/解码快捷键)
+            </div>
+        </div>
+
+        <!-- 3. 输出区域 -->
+        <div class="output-header">
+            <div class="output-header-left">
+                📋 Base64 编码或解码的结果:
+            </div>
+            <div class="output-options">
+                <label>
+                    <input type="checkbox" id="autoSelectCheckbox"> 编码后自动全选
+                </label>
+                <button id="copyOutputBtn" class="copy-btn" title="复制到剪贴板">📋 复制</button>
+            </div>
+        </div>
+        <textarea id="outputText" placeholder="这里将显示结果..." readonly></textarea>
+        
+        <!-- 微小分隔 + 提示 (无实际功能，只为美观) -->
+        <div class="separator"></div>
+        <div class="footer-note">
+            Ctrl + Enter 触发当前模式 (当前: <span id="currentModeHint">编码</span>)
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // 确保 jQuery 已加载，但使用 $ 安全
+            $(document).ready(function() {
+
+                // --- DOM 元素 ---
+                const $input = $('#inputText');
+                const $output = $('#outputText');
+                const $encodeBtn = $('#encodeBtn');
+                const $decodeBtn = $('#decodeBtn');
+                const $swapBtn = $('#swapBtn');
+                const $copyBtn = $('#copyOutputBtn');
+                const $autoCheck = $('#autoSelectCheckbox');
+                const $modeHint = $('#currentModeHint');
+
+                // --- 状态变量 ---
+                let currentMode = 'encode';   // 'encode' 或 'decode'
+
+                // --- 工具函数：Base64 编码 (支持 Unicode) ---
+                function base64Encode(str) {
+                    try {
+                        // 经典方法: 先 encodeURIComponent 转义，再转成二进制，btoa
+                        // 注意: unescape 和 escape 虽已弃用但非常稳定，兼容性好
+                        return btoa(unescape(encodeURIComponent(str)));
+                    } catch (e) {
+                        throw new Error('编码失败：包含无法处理的字符');
+                    }
+                }
+
+                // --- 工具函数：Base64 解码 (支持 Unicode，自动去除空白) ---
+                function base64Decode(base64Str) {
+                    try {
+                        // 去除所有空白字符 (空格、换行、制表符等) —— 提升容错
+                        const cleaned = base64Str.replace(/\s+/g, '');
+                        if (cleaned === '') return '';   // 空字符串返回空
+                        // atob 解码，再通过 decodeURIComponent + escape 还原 Unicode
+                        return decodeURIComponent(escape(atob(cleaned)));
+                    } catch (e) {
+                        throw new Error('无效的 Base64 字符串 (无法解析)');
+                    }
+                }
+
+                // --- 更新按钮样式 (根据 currentMode) ---
+                function updateButtonsStyle() {
+                    if (currentMode === 'encode') {
+                        $encodeBtn.removeClass('secondary').addClass('primary');
+                        $decodeBtn.removeClass('primary').addClass('secondary');
+                        $modeHint.text('编码');
+                    } else {
+                        $decodeBtn.removeClass('secondary').addClass('primary');
+                        $encodeBtn.removeClass('primary').addClass('secondary');
+                        $modeHint.text('解码');
+                    }
+                }
+
+                // --- 执行编码 (核心) ---
+                function performEncode() {
+                    const inputVal = $input.val();
+                    try {
+                        const encoded = base64Encode(inputVal);
+                        $output.val(encoded);
+                        
+                        // 输出框自动获得焦点
+                        $output.focus();
+
+                        // 如果勾选了“编码后自动全选”，则全选输出框内容
+                        if ($autoCheck.prop('checked')) {
+                            $output.select();
+                        }
+                    } catch (e) {
+                        $output.val('❌ 编码错误: ' + e.message);
+                        $output.focus();  // 出错时也聚焦，方便查看
+                    }
+                }
+
+                // --- 执行解码 (核心) ---
+                function performDecode() {
+                    const inputVal = $input.val();
+                    try {
+                        const decoded = base64Decode(inputVal);
+                        $output.val(decoded);
+                        $output.focus();   // 自动获得焦点
+                        // 注意：解码永远不自动全选 (根据需求，只有编码后自动全选)
+                    } catch (e) {
+                        $output.val('❌ 解码失败: ' + e.message);
+                        $output.focus();
+                    }
+                }
+
+                // --- 根据当前模式执行操作 ---
+                function performCurrentMode() {
+                    if (currentMode === 'encode') {
+                        performEncode();
+                    } else {
+                        performDecode();
+                    }
+                }
+
+                // --- 事件监听 ---
+
+                // 编码按钮
+                $encodeBtn.on('click', function() {
+                    // 改变当前模式为编码
+                    currentMode = 'encode';
+                    updateButtonsStyle();
+                    performEncode();   // 立即执行编码
+                });
+
+                // 解码按钮
+                $decodeBtn.on('click', function() {
+                    currentMode = 'decode';
+                    updateButtonsStyle();
+                    performDecode();   // 立即执行解码
+                });
+
+                // 交换按钮
+                $swapBtn.on('click', function() {
+                    const inputVal = $input.val();
+                    const outputVal = $output.val();
+                    $input.val(outputVal);
+                    $output.val(inputVal);
+                    // 交换后，焦点放到输入框方便继续编辑 (可选)
+                    $input.focus();
+                    // 注意：不改变 currentMode
+                });
+
+                // --- 全局快捷键 Ctrl + Enter (或者 Cmd + Enter 兼容Mac) ---
+                $(document).on('keydown', function(e) {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();   // 阻止默认的换行/提交行为
+                        performCurrentMode();
+                    }
+                });
+
+                // --- 复制按钮 (带提示) ---
+                $copyBtn.on('click', function() {
+                    const outputText = $output.val();
+                    if (!outputText) {
+                        // 无内容时提示但不变按钮状态
+                        return;
+                    }
+
+                    // 尝试使用 Clipboard API (现代浏览器)
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(outputText).then(() => {
+                            showCopySuccess();
+                        }).catch(() => {
+                            // fallback: 使用 document.execCommand (旧方法)
+                            fallbackCopy(outputText);
+                        });
+                    } else {
+                        fallbackCopy(outputText);
+                    }
+
+                    // 复制成功视觉反馈
+                    function showCopySuccess() {
+                        const originalText = $copyBtn.text();
+                        $copyBtn.text('✅ 已复制!').addClass('copied');
+                        setTimeout(() => {
+                            $copyBtn.text(originalText).removeClass('copied');
+                        }, 1200);
+                    }
+
+                    function fallbackCopy(text) {
+                        try {
+                            // 创建一个临时的textarea 用于复制
+                            const $temp = $('<textarea>');
+                            $('body').append($temp);
+                            $temp.val(text).select();
+                            const success = document.execCommand('copy');
+                            $temp.remove();
+                            if (success) {
+                                showCopySuccess();
+                            } else {
+                                alert('无法复制，请手动选中后 Ctrl+C');
+                            }
+                        } catch (err) {
+                            alert('复制失败: ' + err);
+                        }
+                    }
+                });
+
+                // --- 初始化: 默认编码模式, 按钮样式, 并确保输出框只读但可复制 (已设readonly) ---
+                // 其实 output 我们设置 readonly 防止误改，但交换时仍能将值赋给它，不影响。
+                // 如果用户希望输出框也能手动修改，可以去掉 readonly。但为了符合传统工具习惯，保留只读。
+                // 但交换功能需要将输出框旧值赋给输入框，所以只读不影响赋值。
+                // 已设 readonly，同时不影响复制。
+
+                // 设置默认模式
+                currentMode = 'encode';
+                updateButtonsStyle();
+
+                // 加一个焦点占位: 默认输入框获得焦点
+                $input.focus();
+
+                // 小细节: 如果解码错误，输出框显示错误，用户可以用交换快速修正内容
+                // 所有功能满足
+
+                // 额外处理：解码时自动去除空白已在 base64Decode 中实现
+
+                // 可选: 输入框内容变化时不清空结果，完全由用户控制
+            });
+        })();
+    </script>
+</body>
+</html>
