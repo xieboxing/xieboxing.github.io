@@ -69,14 +69,24 @@
             text-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
         }
 
-        /* 副标题样式 */
+        /* 副标题样式 - 新增自动字体流光特效 */
         .subtitle {
             font-size: 1.1rem;
-            color: #94a3b8;
             margin-bottom: 25px;
             letter-spacing: 1px;
+            /* 字体流光渐变 */
+            background: linear-gradient(90deg, #00f0ff, #a020f0, #0080ff, #00f0ff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            /* 自动循环动画 */
+            animation: rainbowText 3s linear infinite;
+            /* 文字发光增强效果 */
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
         }
 
+        /* 搜索容器样式 */
         .search-container {
             max-width: 500px;
             margin: 0 auto 40px;
@@ -129,9 +139,9 @@
             gap: 15px;
         }
 
+        /* 工具卡片样式 - 替换为流光边框特效 */
         .tool-card {
             background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
-            border: 1px solid rgba(6, 182, 212, 0.2);
             border-radius: 12px;
             padding: 20px 12px;
             text-align: center;
@@ -142,12 +152,45 @@
             align-items: center;
             justify-content: center;
             min-height: 80px;
+            /* 关键：为伪元素预留空间 */
+            background-clip: padding-box;
+            border: 1px solid transparent; /* 占位边框 */
+            overflow: visible;
         }
 
+        /* 流光边框伪元素 - 核心特效 */
+        .tool-card::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: calc(12px + 3px);
+            background-image: linear-gradient(45deg, #00f0ff, #0080ff, #a020f0, #00f0ff);
+            background-size: 300% 300%;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            /* 只显示边框区域 */
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            padding: 3px;
+        }
+
+        /* 卡片hover效果 - 显示流光边框 + 轻微上浮 */
         .tool-card:hover {
             transform: translateY(-5px);
-            border-color: #06b6d4;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 10px rgba(6, 182, 212, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* hover时激活流光动画 */
+        .tool-card:hover::after {
+            opacity: 1;
+            animation: rainbowBorder 2s linear infinite;
         }
 
         .tool-name {
@@ -186,10 +229,25 @@
             color: #64748b;
         }
 
+        /* 原有渐变动画 */
         @keyframes gradient {
             0% { background-position: 0% center; }
             50% { background-position: 100% center; }
             100% { background-position: 0% center; }
+        }
+
+        /* 新增：字体流光动画 */
+        @keyframes rainbowText {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 新增：边框流光动画 */
+        @keyframes rainbowBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         @media (max-width: 480px) {
@@ -233,8 +291,6 @@
             { name: '字符串长度计算', file: '字符串长度在线计算.html' },
             { name: '进制转换工具', file: '进制转换工具.html' },
 
-
-
             { name: 'URL编码解码', file: 'URL编码解码.html' },
             { name: 'JWT加密解密', file: 'JWT加密解密.html' },
             { name: 'Base64加密解密', file: 'Base64加密解密.html' },
@@ -246,10 +302,8 @@
             { name: 'IP信息查询', file: 'https://www.ip.cn/', type: "三方" },
             { name: '临时邮箱', file: 'https://maildrop.cc/', type: "三方" },
             { name: '科学计算器', file: './科学计算器/index.html' },
-
-
+            
             { name: 'UUID生成器', file: 'UUID生成器.html' },
-                       
         ];
 
         $(document).ready(function() {
