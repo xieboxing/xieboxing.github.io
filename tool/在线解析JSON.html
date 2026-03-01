@@ -56,12 +56,105 @@
         .text-view { white-space: pre-wrap; word-break: break-all; color: #334155; line-height: 1.7; }
         #error-overlay { position: absolute; top: 16px; left: 16px; right: 16px; background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 6px; border: 1px solid #fee2e2; font-size: 13px; display: none; z-index: 10; }
         #toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 8px 20px; border-radius: 20px; font-size: 13px; display: none; z-index: 1000; }
+
+        /* ========== 移动端H5适配样式（仅新增，不修改PC端） ========== */
+        @media (max-width: 768px) {
+            /* 头部适配 */
+            header {
+                height: auto;
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .brand {
+                font-size: 18px;
+                gap: 8px;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 8px;
+            }
+            .toolbar {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .toolbar label {
+                margin-right: 0;
+                font-size: 12px;
+            }
+            /* 隐藏移动端工具栏竖线分隔符，避免排版混乱 */
+            .toolbar > div[style*="width:1px; height:20px; background:#e2e8f0;"] {
+                display: none;
+            }
+            /* 按钮适配 */
+            .btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                gap: 4px;
+            }
+
+            /* 主体布局适配：移动端改为上下排列 */
+            main {
+                flex-direction: column;
+                height: calc(100% - 110px); /* 适配头部高度变化 */
+                padding: 10px;
+                gap: 10px;
+                overflow: hidden;
+            }
+            .panel {
+                flex: none;
+                height: 50%; /* 两个面板各占50%高度 */
+            }
+            .panel-header {
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+
+            /* 输入框和预览区适配 */
+            #json-input {
+                padding: 12px;
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            #viewer-container {
+                padding: 12px;
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            /* 树形视图适配 */
+            .indent {
+                margin-left: 18px;
+            }
+            .toggle {
+                width: 18px;
+            }
+            .line {
+                padding: 0;
+            }
+
+            /* 提示框适配 */
+            #error-overlay {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 10px;
+                font-size: 12px;
+            }
+            #toast {
+                top: 90px;
+                padding: 6px 16px;
+                font-size: 12px;
+                border-radius: 16px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand"><i class="fa-solid fa-code-merge"></i> <span>JSON Master</span></div>
+        <div class="brand"><i class="fa-solid fa-code-merge"></i> <span>在线解析JSON</span></div>
         <div class="toolbar">
             <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-right: 10px;">
                 <input type="checkbox" id="keep-escape" checked> 保留转义
