@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线正则表达式测试</title>
+    <!-- 引入 jQuery 3.5.1 -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <!-- 引入 Font Awesome 6.0.0-beta3 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 全局样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        /* 标题样式 */
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* 模块间距 */
+        .module {
+            margin-bottom: 25px;
+        }
+
+        /* 文本框样式 */
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #409eff;
+            box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+        }
+
+        textarea[readonly] {
+            background-color: #f5f7fa;
+            color: #606266;
+        }
+
+        /* 正则操作行 */
+        .regex-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .regex-label {
+            font-weight: 600;
+            color: #606266;
+            white-space: nowrap;
+        }
+
+        .regex-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: #409eff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #66b1ff;
+        }
+
+        .btn:active {
+            background-color: #3a8ee6;
+            transform: translateY(1px);
+        }
+
+        /* 替换操作行 */
+        .replace-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .replace-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* 表格样式 */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .meta-table th, .meta-table td {
+            border: 1px solid #dcdfe6;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .meta-table th {
+            background-color: #f5f7fa;
+            font-weight: 600;
+            color: #303133;
+        }
+
+        .meta-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .meta-table tr:hover {
+            background-color: #f0f9ff;
+        }
+
+        .meta-table code {
+            background-color: #f4f4f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #c7254e;
+        }
+
+        /* Toast 提示样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fef0f0;
+            color: #f56c6c;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #fde2e2;
+        }
+
+        .toast.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .regex-row, .replace-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .checkbox-group {
+                justify-content: space-between;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <div class="container">
+        <!-- 页面顶部主标题 -->
+        <h1>在线正则表达式测试</h1>
+
+        <!-- 第一模块：待匹配文本输入区 -->
+        <div class="module">
+            <h2>待匹配文本</h2>
+            <textarea id="input-text" placeholder="在此输入待匹配文本"></textarea>
+        </div>
+
+        <!-- 第二模块：正则表达式操作行 -->
+        <div class="module">
+            <div class="regex-row">
+                <span class="regex-label">正则表达式</span>
+                <input type="text" id="regex-input" class="regex-input" placeholder="在此输入正则表达式">
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="global-check" checked>
+                        <span>全局搜索</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="case-check">
+                        <span>忽略大小写</span>
+                    </label>
+                </div>
+                <button id="test-btn" class="btn">
+                    <i class="fas fa-search"></i>
+                    测试匹配
+                </button>
+            </div>
+        </div>
+
+        <!-- 第三模块：匹配结果展示区 -->
+        <div class="module">
+            <h2>匹配结果:</h2>
+            <textarea id="match-result" readonly placeholder="匹配结果将显示在这里"></textarea>
+        </div>
+
+        <!-- 第四模块：替换操作行 -->
+        <div class="module">
+            <div class="replace-row">
+                <span class="regex-label">替换文本</span>
+                <input type="text" id="replace-input" class="replace-input" placeholder="在此输入替换文本">
+                <button id="replace-btn" class="btn">
+                    <i class="fas fa-exchange-alt"></i>
+                    替换
+                </button>
+            </div>
+        </div>
+
+        <!-- 第五模块：替换结果展示区 -->
+        <div class="module">
+            <h2>替换结果:</h2>
+            <textarea id="replace-result" readonly placeholder="替换结果将显示在这里"></textarea>
+        </div>
+
+        <!-- 第六模块：正则表达式规则说明区 -->
+        <div class="module">
+            <h2>正则表达式元字符说明</h2>
+            <table class="meta-table">
+                <thead>
+                    <tr>
+                        <th>元字符</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>\</code></td><td>将下一个字符标记为或特殊字符、或原义字符、或向后引用、或八进制转义符。例如，“\\n”匹配\n。“\n”匹配换行符。序列“\\”匹配“\”而“\(”则匹配“(”。即相当于多种编程语言中都有的“转义字符”的概念。</td></tr>
+                    <tr><td><code>^</code></td><td>匹配输入字行首。如果设置了RegExp对象的Multiline属性，^也匹配“\n”或“\r”之后的位置。</td></tr>
+                    <tr><td><code>$</code></td><td>匹配输入行尾。如果设置了RegExp对象的Multiline属性，$也匹配“\n”或“\r”之前的位置。</td></tr>
+                    <tr><td><code>*</code></td><td>匹配前面的子表达式任意次。例如，zo*能匹配“z”，也能匹配“zo”以及“zoo”。等价于{0,}。</td></tr>
+                    <tr><td><code>+</code></td><td>匹配前面的子表达式一次或多次(大于等于1次）。例如，“zo+”能匹配“zo”以及“zoo”，但不能匹配“z”。+等价于{1,}。</td></tr>
+                    <tr><td><code>?</code></td><td>匹配前面的子表达式零次或一次。例如，“do(es)?”可以匹配“do”或“does”。?等价于{0,1}。</td></tr>
+                    <tr><td><code>{n}</code></td><td>n是一个非负整数。匹配确定的n次。例如，“o{2}”不能匹配“Bob”中的“o”，但是能匹配“food”中的两个o。</td></tr>
+                    <tr><td><code>{n,}</code></td><td>n是一个非负整数。至少匹配n次。例如，“o{2,}”不能匹配“Bob”中的“o”，但能匹配“foooood”中的所有o。“o{1,}”等价于“o+”。“o{0,}”则等价于“o*”。</td></tr>
+                    <tr><td><code>{n,m}</code></td><td>m和n均为非负整数，其中n<=m。最少匹配n次且最多匹配m次。例如，“o{1,3}”将匹配“fooooood”中的前三个o为一组，后三个o为一组。“o{0,1}”等价于“o?”。请注意在逗号和两个数之间不能有空格。</td></tr>
+                    <tr><td><code>?</code></td><td>当该字符紧跟在任何一个其他限制符（*,+,?，{n}，{n,}，{n,m}）后面时，匹配模式是非贪婪的。非贪婪模式尽可能少地匹配所搜索的字符串，而默认的贪婪模式则尽可能多地匹配所搜索的字符串。例如，对于字符串“oooo”，“o+”将尽可能多地匹配“o”，得到结果[“oooo”]，而“o+?”将尽可能少地匹配“o”，得到结果 ['o', 'o', 'o', 'o']</td></tr>
+                    <tr><td><code>.点</code></td><td>匹配除“\n”和"\r"之外的任何单个字符。要匹配包括“\n”和"\r"在内的任何字符，请使用像“[\s\S]”的模式。</td></tr>
+                    <tr><td><code>(pattern)</code></td><td>匹配pattern并获取这一匹配。所获取的匹配可以从产生的Matches集合得到，在VBScript中使用SubMatches集合，在JScript中则使用$0…$9属性。要匹配圆括号字符，请使用“\(”或“\)”。</td></tr>
+                    <tr><td><code>(?:pattern)</code></td><td>非获取匹配，匹配pattern但不获取匹配结果，不进行存储供以后使用。这在使用或字符“(|)”来组合一个模式的各个部分时很有用。例如“industr(?:y|ies)”就是一个比“industry|industries”更简略的表达式。</td></tr>
+                    <tr><td><code>(?=pattern)</code></td><td>非获取匹配，正向肯定预查，在任何匹配pattern的字符串开始处匹配查找字符串，该匹配不需要获取供以后使用。例如，“Windows(?=95|98|NT|2000)”能匹配“Windows2000”中的“Windows”，但不能匹配“Windows3.1”中的“Windows”。预查不消耗字符，也就是说，在一个匹配发生后，在最后一次匹配之后立即开始下一次匹配的搜索，而不是从包含预查的字符之后开始。</td></tr>
+                    <tr><td><code>(?!pattern)</code></td><td>非获取匹配，正向否定预查，在任何不匹配pattern的字符串开始处匹配查找字符串，该匹配不需要获取供以后使用。例如“Windows(?!95|98|NT|2000)”能匹配“Windows3.1”中的“Windows”，但不能匹配“Windows2000”中的“Windows”。</td></tr>
+                    <tr><td><code>(?<=pattern)</code></td><td>非获取匹配，反向肯定预查，与正向肯定预查类似，只是方向相反。例如，“(?<=95|98|NT|2000)Windows”能匹配“2000Windows”中的“Windows”，但不能匹配“3.1Windows”中的“Windows”。*python的正则表达式没有完全按照正则表达式规范实现，所以一些高级特性建议使用其他语言如java、scala等</td></tr>
+                    <tr><td><code>(?<!pattern)</code></td><td>非获取匹配，反向否定预查，与正向否定预查类似，只是方向相反。例如，“(?<!95|98|NT|2000)Windows”能匹配“3.1Windows”中的“Windows”，但不能匹配“2000Windows”中的“Windows”。*python的正则表达式没有完全按照正则表达式规范实现，所以一些高级特性建议使用其他语言如java、scala等</td></tr>
+                    <tr><td><code>x|y</code></td><td>匹配x或y。例如，“z|food”能匹配“z”或“food”(此处请谨慎)。“[z|f]ood”则匹配“zood”或“food”。</td></tr>
+                    <tr><td><code>[xyz]</code></td><td>字符集合。匹配所包含的任意一个字符。例如，“[abc]”可以匹配“plain”中的“a”。</td></tr>
+                    <tr><td><code>[^xyz]</code></td><td>负值字符集合。匹配未包含的任意字符。例如，“[^abc]”可以匹配“plain”中的“plin”任一字符。</td></tr>
+                    <tr><td><code>[a-z]</code></td><td>字符范围。匹配指定范围内的任意字符。例如，“[a-z]”可以匹配“a”到“z”范围内的任意小写字母字符。注意:只有连字符在字符组内部时,并且出现在两个字符之间时,才能表示字符的范围; 如果出字符组的开头,则只能表示连字符本身.</td></tr>
+                    <tr><td><code>[^a-z]</code></td><td>负值字符范围。匹配任何不在指定范围内的任意字符。例如，“[^a-z]”可以匹配任何不在“a”到“z”范围内的任意字符。</td></tr>
+                    <tr><td><code>\b</code></td><td>匹配一个单词的边界，也就是指单词和空格间的位置（即正则表达式的“匹配”有两种概念，一种是匹配字符，一种是匹配位置，这里的\b就是匹配位置的）。例如，“er\b”可以匹配“never”中的“er”，但不能匹配“verb”中的“er”；“\b1_”可以匹配“1_23”中的“1_”，但不能匹配“21_3”中的“1_”。</td></tr>
+                    <tr><td><code>\B</code></td><td>匹配非单词边界。“er\B”能匹配“verb”中的“er”，但不能匹配“never”中的“er”。</td></tr>
+                    <tr><td><code>\cx</code></td><td>匹配由x指明的控制字符。例如，\cM匹配一个Control-M或回车符。x的值必须为A-Z或a-z之一。否则，将c视为一个原义的“c”字符。</td></tr>
+                    <tr><td><code>\d</code></td><td>匹配一个数字字符。等价于[0-9]。grep 要加上-P，perl正则支持</td></tr>
+                    <tr><td><code>\D</code></td><td>匹配一个非数字字符。等价于[^0-9]。grep要加上-P，perl正则支持</td></tr>
+                    <tr><td><code>\f</code></td><td>匹配一个换页符。等价于\x0c和\cL。</td></tr>
+                    <tr><td><code>\n</code></td><td>匹配一个换行符。等价于\x0a和\cJ。</td></tr>
+                    <tr><td><code>\r</code></td><td>匹配一个回车符。等价于\x0d和\cM。</td></tr>
+                    <tr><td><code>\s</code></td><td>匹配任何不可见字符，包括空格、制表符、换页符等等。等价于[ \f\n\r\t\v]。</td></tr>
+                    <tr><td><code>\S</code></td><td>匹配任何可见字符。等价于[^ \f\n\r\t\v]。</td></tr>
+                    <tr><td><code>\t</code></td><td>匹配一个制表符。等价于\x09和\cI。</td></tr>
+                    <tr><td><code>\v</code></td><td>匹配一个垂直制表符。等价于\x0b和\cK。</td></tr>
+                    <tr><td><code>\w</code></td><td>匹配包括下划线的任何单词字符。类似但不等价于“[A-Za-z0-9_]”，这里的"单词"字符使用Unicode字符集。</td></tr>
+                    <tr><td><code>\W</code></td><td>匹配任何非单词字符。等价于“[^A-Za-z0-9_]”。</td></tr>
+                    <tr><td><code>\xn</code></td><td>匹配n，其中n为十六进制转义值。十六进制转义值必须为确定的两个数字长。例如，“\x41”匹配“A”。“\x041”则等价于“\x04&1”。正则表达式中可以使用ASCII编码。</td></tr>
+                    <tr><td><code>\num</code></td><td>匹配num，其中num是一个正整数。对所获取的匹配的引用。例如，“(.)\1”匹配两个连续的相同字符。</td></tr>
+                    <tr><td><code>\n</code></td><td>标识一个八进制转义值或一个向后引用。如果\n之前至少n个获取的子表达式，则n为向后引用。否则，如果n为八进制数字（0-7），则n为一个八进制转义值。</td></tr>
+                    <tr><td><code>\nm</code></td><td>标识一个八进制转义值或一个向后引用。如果\nm之前至少有nm个获得子表达式，则nm为向后引用。如果\nm之前至少有n个获取，则n为一个后跟文字m的向后引用。如果前面的条件都不满足，若n和m均为八进制数字（0-7），则\nm将匹配八进制转义值nm。</td></tr>
+                    <tr><td><code>\nml</code></td><td>如果n为八进制数字（0-7），且m和l均为八进制数字（0-7），则匹配八进制转义值nml。</td></tr>
+                    <tr><td><code>\un</code></td><td>匹配n，其中n是一个用四个十六进制数字表示的Unicode字符。例如，\u00A9匹配版权符号（©）。</td></tr>
+                    <tr><td><code>\p{P}</code></td><td>小写 p 是 property 的意思，表示 Unicode 属性，用于 Unicode 正表达式的前缀。中括号内的“P”表示Unicode 字符集七个字符属性之一：标点字符。其他六个属性：L：字母；M：标记符号（一般不会单独出现）；Z：分隔符（比如空格、换行等）；S：符号（比如数学符号、货币符号等）；N：数字（比如阿拉伯数字、罗马数字等）；C：其他字符。*注：此语法部分语言不支持，例：javascript。</td></tr>
+                    <tr><td><code>\&lt; \&gt;</code></td><td>匹配词（word）的开始（\&lt;）和结束（\&gt;）。例如正则表达式\&lt;the\&gt;能够匹配字符串"for the wise"中的"the"，但是不能匹配字符串"otherwise"中的"the"。注意：这个元字符不是所有的软件都支持的。</td></tr>
+                    <tr><td><code>( )</code></td><td>将( 和 ) 之间的表达式定义为“组”（group），并且将匹配这个表达式的字符保存到一个临时区域（一个正则表达式中最多可以保存9个），它们可以用 \1 到\9 的符号来引用。</td></tr>
+                    <tr><td><code>|</code></td><td>将两个匹配条件进行逻辑“或”（or）运算。例如正则表达式(him|her) 匹配"it belongs to him"和"it belongs to her"，但是不能匹配"it belongs to them."。注意：这个元字符不是所有的软件都支持的。</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 页面加载完成后自动填充示例内容
+            initSampleData();
+            
+            // 绑定测试匹配按钮点击事件
+            $('#test-btn').on('click', testMatch);
+            
+            // 绑定替换按钮点击事件
+            $('#replace-btn').on('click', doReplace);
+            
+            // 初始化示例数据
+            function initSampleData() {
+                // 待匹配文本：包含10位和13位时间戳的测试文本
+                const sampleText = `这是一段测试文本，包含不同格式的时间戳。
+10位时间戳：1617235200 (2021-04-01)
+13位时间戳：1617235200000 (2021-04-01 00:00:00)
+另一个10位时间戳：1619827200
+另一个13位时间戳：1619827200123
+混合文本：abc1617235200xyz 1617235200000test`;
+                
+                // 匹配时间戳的示例正则：匹配10位或13位数字
+                const sampleRegex = '\\b(\\d{10}|\\d{13})\\b';
+                
+                // 填充到输入框
+                $('#input-text').val(sampleText);
+                $('#regex-input').val(sampleRegex);
+            }
+            
+            // 显示Toast提示
+            function showToast(message) {
+                const $toast = $('#toast');
+                const $toastMessage = $('#toast-message');
+                
+                $toastMessage.text(message);
+                $toast.addClass('show');
+                
+                // 3秒后自动隐藏
+                setTimeout(function() {
+                    $toast.removeClass('show');
+                }, 3000);
+            }
+            
+            // 测试匹配功能 - 优化版
+            function testMatch() {
+                const inputText = $('#input-text').val();
+                const regexPattern = $('#regex-input').val();
+                const isGlobal = $('#global-check').is(':checked');
+                const isCaseInsensitive = $('#case-check').is(':checked');
+                
+                // 容错检查
+                if (!inputText.trim()) {
+                    showToast('请输入待匹配文本');
+                    return;
+                }
+                
+                if (!regexPattern.trim()) {
+                    showToast('请输入正则表达式');
+                    return;
+                }
+                
+                try {
+                    // 构建修饰符
+                    let flags = '';
+                    if (isGlobal) flags += 'g';
+                    if (isCaseInsensitive) flags += 'i';
+                    
+                    // 创建正则表达式对象
+                    const regex = new RegExp(regexPattern, flags);
+                    
+                    let results = [];
+                    
+                    // 使用 String.prototype.match() 方法，它会自动根据是否有 g 修饰符来决定返回结果
+                    if (isGlobal) {
+                        // 全局匹配：使用 match() 返回所有匹配项
+                        const matches = inputText.match(regex);
+                        if (matches) {
+                            results = matches;
+                        }
+                    } else {
+                        // 非全局匹配：使用 exec() 获取第一个匹配
+                        const match = regex.exec(inputText);
+                        if (match) {
+                            results.push(match[0]);
+                        }
+                    }
+                    
+                    // 显示结果
+                    if (results.length > 0) {
+                        $('#match-result').val(results.join('\n'));
+                    } else {
+                        $('#match-result').val('未匹配到任何内容');
+                    }
+                } catch (e) {
+                    showToast('正则表达式语法错误: ' + e.message);
+                }
+            }
+            
+            // 替换功能 - 优化版
+            function doReplace() {
+                const inputText = $('#input-text').val();
+                const regexPattern = $('#regex-input').val();
+                const replaceText = $('#replace-input').val();
+                const isGlobal = $('#global-check').is(':checked');
+                const isCaseInsensitive = $('#case-check').is(':checked');
+                
+                // 容错检查
+                if (!inputText.trim()) {
+                    showToast('请输入待匹配文本');
+                    return;
+                }
+                
+                if (!regexPattern.trim()) {
+                    showToast('请输入正则表达式');
+                    return;
+                }
+                
+                try {
+                    // 构建修饰符
+                    let flags = '';
+                    if (isGlobal) flags += 'g';
+                    if (isCaseInsensitive) flags += 'i';
+                    
+                    // 创建正则表达式对象
+                    const regex = new RegExp(regexPattern, flags);
+                    
+                    // 执行替换 - String.replace() 会自动根据 g 修饰符决定是否全局替换
+                    const result = inputText.replace(regex, replaceText);
+                    
+                    // 显示结果
+                    $('#replace-result').val(result);
+                } catch (e) {
+                    showToast('正则表达式语法错误: ' + e.message);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
