@@ -335,6 +335,50 @@
             opacity: 1;
             animation: rainbowBorder 2s linear infinite;
         }
+        /* ---------- 免费个人工具通栏按钮优化 ---------- */
+        .tool-btn {
+            display: block !important;        /* 单独占一行 */
+            width: 100% !important;          /* 撑满侧边栏宽度，与二维码对齐 */
+            text-align: center !important;    /* 文字水平居中 */
+            margin: 1rem 0 1.5rem !important;/* 上下间距：适配页面现有节奏 */
+            padding: 0.6rem 1rem !important; /* 增加垂直内边距，让按钮更饱满 */
+            font-size: 0.75rem !important;   /* 字体稍大于普通标签，提升醒目度 */
+            font-weight: 600 !important;      /* 字重稍重，突出重点 */
+            text-decoration: none !important; /* 【新增】去掉文字下划线 */
+            
+            /* 常态：青蓝色霓虹渐变背景 */
+            background: linear-gradient(135deg, #00ffff, #0080ff) !important;
+            color: #ffffff !important;        /* 纯白色文字，强对比 */
+            border: 1px solid #00f0ff !important; /* 主色描边，强化轮廓 */
+            box-shadow: 0 0 15px #00f0ff, 0 0 30px #00f0ff50 !important; /* 常态科技感外发光 */
+            
+            cursor: pointer !important;       /* 明确可点击 */
+            transform: none !important;       /* 禁止常态缩放，保持通栏稳定 */
+        }
+
+        .tool-btn:hover {
+            /* Hover：强化渐变亮度 */
+            background: linear-gradient(135deg, #00ffff, #00aaff) !important;
+            color: #ffffff !important;
+            border-color: transparent !important;
+            
+            /* Hover：放大发光特效 */
+            box-shadow: 0 0 25px #00f0ff, 0 0 50px #00f0ff80 !important;
+            
+            /* Hover：轻微放大（通栏按钮不宜缩放过大） */
+            transform: scale(1.02) !important;
+        }
+
+        /* 适配流光特效：调整速度，让长按钮动效更自然 */
+        .tool-btn::after {
+            border-radius: calc(40px + 3px) !important; /* 保持与普通标签一致的圆角 */
+            animation-duration: 1.5s !important;         /* 加快流光速度，适配长按钮 */
+        }
+
+        .tool-btn:hover::after {
+            opacity: 1 !important;
+            animation: rainbowBorder 1.5s linear infinite !important;
+        }
         /* 为timeline-item调整圆角 */
         .timeline-item::after {
             border-radius: calc(20px + 3px);
