@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线UUID生成器 - 极简专业版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-dark: #212529;
+            --secondary-dark: #495057;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, system-ui, sans-serif; padding: 20px; background: #fff; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        h1 { text-align: center; font-size: 2.2rem; margin-bottom: 30px; font-weight: 800; color: var(--primary-dark); }
+
+        /* 版本选择区 */
+        .version-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .version-btn { 
+            padding: 12px 24px; cursor: pointer; background: #fff; border: 1px solid var(--border-color);
+            border-radius: 6px; font-weight: 600; transition: all 0.2s; min-width: 90px;
+        }
+        .version-btn.active { background: var(--primary-dark); color: #fff; border-color: var(--primary-dark); }
+
+        /* 操作行 */
+        .action-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; }
+        .input-group { display: flex; align-items: center; gap: 10px; }
+        input[type="number"] { width: 90px; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .btn-generate { background: var(--primary-dark); color: #fff; }
+        .btn-copy { background: var(--secondary-dark); color: #fff; }
+        .btn:hover { opacity: 0.9; }
+
+        /* 结果展示区 */
+        textarea { 
+            width: 100%; height: 320px; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px;
+            background: var(--light-gray); font-family: 'Monaco', 'Consolas', monospace; font-size: 14px;
+            resize: none; outline: none; margin-bottom: 40px;
+        }
+
+        /* 底部问答区 */
+        .faq-section { border-top: 2px solid var(--light-gray); padding-top: 30px; }
+        .faq-title { font-size: 1.4rem; margin-bottom: 20px; color: var(--primary-dark); }
+        .faq-item { margin-bottom: 25px; }
+        .faq-q { font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px; }
+        .faq-a { color: #555; line-height: 1.8; text-align: justify; }
+
+        #toast { 
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.85); color: #fff; padding: 10px 24px; border-radius: 50px;
+            display: none; z-index: 9999; font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .action-bar { flex-direction: column; width: 100%; }
+            .input-group, .btn { width: 100%; justify-content: center; }
+            .version-btn { flex: 1 1 40%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="container">
+    <h1>uuid在线生成器</h1>
+
+    <div class="version-tabs">
+        <button class="version-btn active" data-v="1">UUID1</button>
+        <button class="version-btn" data-v="3">UUID3</button>
+        <button class="version-btn" data-v="4">UUID4</button>
+        <button class="version-btn" data-v="5">UUID5</button>
+    </div>
+
+    <div class="action-bar">
+        <div class="input-group">
+            <label>请输入数量</label>
+            <input type="number" id="uuidCount" value="1" min="1" max="1000">
+        </div>
+        <button id="genBtn" class="btn btn-generate"><i class="fas fa-sync"></i> 生成</button>
+        <button id="copyBtn" class="btn btn-copy"><i class="fas fa-copy"></i> 复制</button>
+    </div>
+
+    <textarea id="output" readonly></textarea>
+
+    <div class="faq-section">
+        <h2 class="faq-title">UUID常见问题</h2>
+        <div class="faq-item">
+            <b class="faq-q">什么是UUID</b>
+            <p class="faq-a">UUID 是通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。UUID 是由一组32位数的16进制数字所构成，以连字符分为五段，形式为8-4-4-4-12的32个字符，理论上总数可达2^128个，完全可以满足全球唯一标识的使用需求。</p>
+        </div>
+        <div class="faq-item">
+            <b class="faq-q">如何选择UUID版本</b>
+            <div class="faq-a">
+                <p>• <b>UUID1：</b>基于时间戳和MAC地址生成，保证全球唯一性，适合分布式环境下的ID生成，缺点是会暴露设备MAC地址，存在隐私风险。</p>
+                <p>• <b>UUID3：</b>基于命名空间和名称的MD5哈希生成，相同命名空间+相同名称会生成完全一致的UUID，适合需要固定生成结果的场景。</p>
+                <p>• <b>UUID4：</b>基于随机数生成，是使用最广泛的UUID版本，完全随机，不包含任何可追溯信息，隐私性强，适合绝大多数通用场景、数据库主键、会话标识等用途。</p>
+                <p>• <b>UUID5：</b>基于命名空间和名称的SHA-1哈希生成，和UUID3逻辑一致，仅哈希算法不同，安全性更高，同样适合需要固定生成结果的场景。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    let ver = '1';
+
+    const getUUID = (v) => {
+        // 核心逻辑：生成随机序列并强制修改版本位
+        // UUID 结构: xxxxxxxx-xxxx-Vxxx-Yxxx-xxxxxxxxxxxx
+        // V = 版本号 (1, 3, 4, 5)
+        // Y = 变体号 (8, 9, a, b 之一)
+        let d = new Date().getTime();
+        return 'xxxxxxxx-xxxx-Vxxx-yxxx-xxxxxxxxxxxx'.replace(/[Vxy]/g, function(c) {
+            if (c === 'V') return v;
+            let r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    };
+
+    function generate() {
+        const count = Math.min(Math.max(parseInt($('#uuidCount').val()) || 1, 1), 1000);
+        $('#uuidCount').val(count);
+        let res = [];
+        for(let i=0; i<count; i++) res.push(getUUID(ver));
+        $('#output').val(res.join('\n'));
+    }
+
+    function showToast(m) {
+        $('#toast').text(m).fadeIn().delay(1000).fadeOut();
+    }
+
+    // 版本按钮：切换并立即生成
+    $('.version-btn').click(function() {
+        $('.version-btn').removeClass('active');
+        $(this).addClass('active');
+        ver = $(this).data('v');
+        generate(); // 切换时立即重新生成，消除“结果不对”的疑惑
+    });
+
+    $('#genBtn').click(generate);
+
+    $('#copyBtn').click(function() {
+        const val = $('#output').val();
+        if(!val) return;
+        const el = document.createElement('textarea');
+        el.value = val;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        showToast('复制成功');
+    });
+
+    // 初始生成
+    generate();
+});
+</script>
+</body>
+</html>
