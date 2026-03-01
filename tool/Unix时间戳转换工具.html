@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unix时间戳双向转换工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <style>
+        /* ================= 基础重置与排版 ================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ================= 布局结构 ================= */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .col {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ================= 卡片样式 ================= */
+        .card {
+            background-color: #fdfdfd;
+            border: 1px solid #e0e4e8;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            height: 100%;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-left: 4px solid #4CAF50;
+            padding-left: 10px;
+            line-height: 1.2;
+        }
+
+        /* ================= 表单元素 ================= */
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        label {
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            flex: 1;
+            min-width: 150px;
+            height: 38px;
+            padding: 0 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 4px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+            background-color: #fff;
+        }
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+        }
+        select {
+            height: 38px;
+            padding: 0 30px 0 12px;
+            border: 1px solid #ccd0d5;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* ================= 按钮与操作区 ================= */
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            height: 38px;
+            padding: 0 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background-color: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+        }
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+        .readonly-text {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        /* 优化：当前时间戳点击块样式 */
+        .current-ts-val {
+            display: inline-block;
+            cursor: pointer;
+            padding: 2px 8px;
+            background-color: #f0f2f5;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 15px;
+            color: #444;
+            font-weight: 600;
+            transition: all 0.2s;
+            user-select: none;
+            margin-left: 5px;
+        }
+        .current-ts-val:hover {
+            background-color: #e4e7ed;
+            color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .current-ts-val:active {
+            transform: scale(0.95);
+            background-color: #dcdfe6;
+        }
+
+        /* ================= 结果展示框 ================= */
+        .result-box {
+            width: 100%;
+        }
+        .result-input {
+            width: 100%;
+            height: 50px;
+            padding: 0 16px;
+            border: 1px solid #dce1e6;
+            border-radius: 6px;
+            font-size: 18px;
+            font-family: monospace;
+            font-weight: 600;
+            color: #333;
+            background-color: #f8f9fa !important;
+            text-align: center;
+            cursor: text;
+            transition: all 0.3s ease;
+        }
+        .result-input::placeholder {
+            color: #adb5bd;
+            font-weight: normal;
+        }
+
+        /* ================= 交互反馈特效 ================= */
+        .highlight-success {
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2) !important;
+            border-color: #4CAF50 !important;
+        }
+        .text-error {
+            color: #dc3545 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <h2 class="card-title">Unix时间戳 → 时间</h2>
+                <div class="form-group">
+                    <label>时间戳</label>
+                    <input type="text" id="ts-input" placeholder="请输入时间戳">
+                    <label>单位</label>
+                    <select id="ts-unit">
+                        <option value="s" selected>秒(s)</option>
+                        <option value="ms">毫秒(ms)</option>
+                    </select>
+                </div>
+                <div class="action-row">
+                    <button class="btn" id="btn-ts-to-time">转换</button>
+                    <span class="readonly-text">当前时间戳 <span class="current-ts-val" id="live-ts" title="点击自动填充并转换">加载中...</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <h2 class="card-title">时间 → Unix时间戳</h2>
+                <div class="form-group">
+                    <label>时间</label>
+                    <input type="text" id="time-input" placeholder="YYYY-MM-DD HH:mm:ss">
+                    <label>单位</label>
+                    <select id="time-unit">
+                        <option value="s" selected>秒(s)</option>
+                        <option value="ms">毫秒(ms)</option>
+                    </select>
+                </div>
+                <div class="action-row">
+                    <button class="btn" id="btn-time-to-ts">转换</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="result-box">
+                <input type="text" id="result-time" class="result-input" readonly placeholder="北京时间格式 (YYYY-MM-DD HH:mm:ss)">
+            </div>
+        </div>
+        <div class="col">
+            <div class="result-box">
+                <input type="text" id="result-ts" class="result-input" readonly placeholder="Unix时间戳结果">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        // ================= 工具函数区 =================
+
+        function formatBeijingTime(timestamp_ms) {
+            if (isNaN(timestamp_ms) || timestamp_ms < 0) return null;
+            let bjTime_ms = timestamp_ms + 28800000;
+            let d = new Date(bjTime_ms);
+            let y = d.getUTCFullYear();
+            let m = String(d.getUTCMonth() + 1).padStart(2, '0');
+            let day = String(d.getUTCDate()).padStart(2, '0');
+            let h = String(d.getUTCHours()).padStart(2, '0');
+            let min = String(d.getUTCMinutes()).padStart(2, '0');
+            let s = String(d.getUTCSeconds()).padStart(2, '0');
+            if (isNaN(y)) return null;
+            return `${y}-${m}-${day} ${h}:${min}:${s}`;
+        }
+
+        function parseBeijingTime(timeStr) {
+            let str = timeStr.trim().replace(/-/g, '/');
+            let parts = str.split(' ');
+            if (parts.length !== 2) return NaN;
+            let dateParts = parts[0].split('/');
+            let timeParts = parts[1].split(':');
+            if (dateParts.length !== 3 || timeParts.length < 2) return NaN;
+            let year = parseInt(dateParts[0], 10);
+            let month = parseInt(dateParts[1], 10) - 1;
+            let day = parseInt(dateParts[2], 10);
+            let hour = parseInt(timeParts[0], 10);
+            let min = parseInt(timeParts[1], 10);
+            let sec = timeParts[2] ? parseInt(timeParts[2], 10) : 0;
+            let assumedUtcMs = Date.UTC(year, month, day, hour, min, sec);
+            return assumedUtcMs - 28800000;
+        }
+
+        function highlightInput($elem) {
+            $elem.removeClass('text-error').addClass('highlight-success');
+            setTimeout(function() { $elem.removeClass('highlight-success'); }, 600);
+        }
+
+        function showError($elem, msg) {
+            $elem.val(msg).addClass('text-error');
+        }
+
+
+        // ================= 初始化与实时时钟 =================
+
+        let initMs = Date.now();
+        $('#ts-input').val(Math.floor(initMs / 1000));
+        $('#time-input').val(formatBeijingTime(initMs));
+
+        setInterval(function () {
+            let currentMs = Date.now();
+            let unit = $('#ts-unit').val();
+            let displayVal = unit === 's' ? Math.floor(currentMs / 1000) : currentMs;
+            $('#live-ts').text(displayVal);
+        }, 1000);
+
+
+        // ================= 核心转换逻辑 =================
+
+        function convertTsToTime() {
+            let valStr = $('#ts-input').val().trim();
+            if (valStr === '') {
+                showError($('#result-time'), '错误：请输入时间戳');
+                return;
+            }
+            let ts = parseInt(valStr, 10);
+            let currentUnit = $('#ts-unit').val();
+
+            // 智能兼容单位
+            if (valStr.length >= 13 && currentUnit === 's') {
+                $('#ts-unit').val('ms');
+                currentUnit = 'ms';
+            } else if (valStr.length <= 10 && currentUnit === 'ms') {
+                $('#ts-unit').val('s');
+                currentUnit = 's';
+            }
+
+            let ms = (currentUnit === 's') ? ts * 1000 : ts;
+            let formattedTime = formatBeijingTime(ms);
+
+            if (formattedTime) {
+                $('#result-time').val(formattedTime).removeClass('text-error');
+                highlightInput($('#result-time'));
+            } else {
+                showError($('#result-time'), '错误：无效的时间戳');
+            }
+        }
+
+        function convertTimeToTs() {
+            let timeStr = $('#time-input').val();
+            let unit = $('#time-unit').val();
+            let ms = parseBeijingTime(timeStr);
+            if (isNaN(ms)) {
+                showError($('#result-ts'), '错误：时间格式应为 YYYY-MM-DD HH:mm:ss');
+                return;
+            }
+            let resultTs = (unit === 's') ? Math.floor(ms / 1000) : ms;
+            $('#result-ts').val(resultTs).removeClass('text-error');
+            highlightInput($('#result-ts'));
+        }
+
+
+        // ================= 事件绑定 =================
+
+        $('#ts-input').on('input', function () {
+            $(this).val($(this).val().replace(/[^\d]/g, ''));
+        });
+
+        $('#btn-ts-to-time').on('click', convertTsToTime);
+        $('#btn-time-to-ts').on('click', convertTimeToTs);
+
+        // 回车触发
+        $('#ts-input, #time-input').on('keypress', function (e) {
+            if (e.which === 13) {
+                if(this.id === 'ts-input') convertTsToTime();
+                else convertTimeToTs();
+            }
+        });
+
+        // 结果点击全选
+        $('.result-input').on('click', function() {
+            if (!$(this).hasClass('text-error')) $(this).select();
+        });
+
+        // 【新增优化核心逻辑】：点击当前时间戳，填充并自动转换
+        $('#live-ts').on('click', function() {
+            let val = $(this).text();
+            if (val !== '加载中...') {
+                $('#ts-input').val(val);
+                convertTsToTime();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
