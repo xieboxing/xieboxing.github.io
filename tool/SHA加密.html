@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线SHA加密工具</title>
+    <!-- 引入jQuery 3.5.1 -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <!-- 引入crypto-js加密库 -->
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* 页面整体样式 */
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* 容器样式 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        /* 主标题样式 */
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #1a1a1a;
+        }
+
+        /* 模块标题样式 */
+        h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        /* 算法选择区样式 */
+        .algorithm-selector {
+            margin-bottom: 30px;
+        }
+
+        .algorithm-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .algorithm-btn {
+            padding: 10px 20px;
+            border: 1px solid #d9d9d9;
+            background-color: #fff;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .algorithm-btn:hover {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+
+        .algorithm-btn.active {
+            background-color: #1890ff;
+            border-color: #1890ff;
+            color: #fff;
+        }
+
+        .algorithm-btn.active:hover {
+            background-color: #40a9ff;
+            border-color: #40a9ff;
+        }
+
+        /* 输入区样式 */
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        /* 按钮组样式 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background-color: #1890ff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d9d9d9;
+        }
+
+        /* 结果区样式 */
+        .result-section {
+            margin-bottom: 30px;
+        }
+
+        /* 说明区样式 */
+        .description-section {
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .description-section p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Toast提示样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .algorithm-buttons {
+                gap: 8px;
+            }
+
+            .algorithm-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+                min-width: 70px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主标题 -->
+        <h1>在线SHA加密工具</h1>
+
+        <!-- SHA算法选择区 -->
+        <div class="algorithm-selector">
+            <div class="algorithm-buttons">
+                <button class="algorithm-btn" data-algorithm="SHA1">SHA1</button>
+                <button class="algorithm-btn" data-algorithm="SHA3">SHA3</button>
+                <button class="algorithm-btn" data-algorithm="SHA224">SHA224</button>
+                <button class="algorithm-btn active" data-algorithm="SHA256">SHA256</button>
+                <button class="algorithm-btn" data-algorithm="SHA384">SHA384</button>
+                <button class="algorithm-btn" data-algorithm="SHA512">SHA512</button>
+            </div>
+        </div>
+
+        <!-- 输入与操作行 -->
+        <div class="input-section">
+            <label for="input-text">请输入待加密文本</label>
+            <textarea id="input-text" placeholder="在此输入需要加密的文本内容..."></textarea>
+            <div class="button-group">
+                <button class="btn btn-primary" id="encrypt-btn">加密</button>
+                <button class="btn btn-secondary" id="copy-btn">复制结果</button>
+            </div>
+        </div>
+
+        <!-- 结果展示区 -->
+        <div class="result-section">
+            <h2>加密结果（哈希值）:</h2>
+            <textarea id="result-text" readonly></textarea>
+        </div>
+
+        <!-- 底部功能说明区 -->
+        <div class="description-section">
+            <h2>SHA加密说明</h2>
+            <p>SHA（Secure Hash Algorithm，安全哈希算法）是一种不可逆的加密算法，将任意长度的输入转换为固定长度的哈希值。本工具支持SHA1、SHA224、SHA256、SHA384、SHA512及SHA3系列算法，广泛应用于数据完整性校验、数字签名等场景。</p>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        $(document).ready(function() {
+            // 当前选中的算法，默认为SHA256
+            let currentAlgorithm = 'SHA256';
+            
+            // 示例文本
+            const exampleText = '这是一段用于测试SHA加密的示例文本！';
+
+            // 算法选择按钮点击事件
+            $('.algorithm-btn').on('click', function() {
+                // 移除所有按钮的active类
+                $('.algorithm-btn').removeClass('active');
+                // 给当前点击的按钮添加active类
+                $(this).addClass('active');
+                // 更新当前选中的算法
+                currentAlgorithm = $(this).data('algorithm');
+            });
+
+            // 加密按钮点击事件
+            $('#encrypt-btn').on('click', function() {
+                const inputText = $('#input-text').val();
+                
+                // 校验输入是否为空
+                if (!inputText.trim()) {
+                    showToast('请输入需要加密的文本');
+                    return;
+                }
+                
+                // 根据选中的算法进行加密
+                const encryptedResult = encrypt(inputText, currentAlgorithm);
+                // 显示加密结果
+                $('#result-text').val(encryptedResult);
+            });
+
+            // 复制结果按钮点击事件
+            $('#copy-btn').on('click', function() {
+                const resultText = $('#result-text').val();
+                
+                // 校验结果是否为空
+                if (!resultText) {
+                    showToast('请先进行加密操作');
+                    return;
+                }
+                
+                // 复制结果到剪贴板
+                copyToClipboard(resultText);
+            });
+
+            // 加密函数
+            function encrypt(text, algorithm) {
+                switch (algorithm) {
+                    case 'SHA1':
+                        return CryptoJS.SHA1(text).toString();
+                    case 'SHA3':
+                        return CryptoJS.SHA3(text).toString();
+                    case 'SHA224':
+                        return CryptoJS.SHA224(text).toString();
+                    case 'SHA256':
+                        return CryptoJS.SHA256(text).toString();
+                    case 'SHA384':
+                        return CryptoJS.SHA384(text).toString();
+                    case 'SHA512':
+                        return CryptoJS.SHA512(text).toString();
+                    default:
+                        return CryptoJS.SHA256(text).toString();
+                }
+            }
+
+            // 复制到剪贴板函数
+            function copyToClipboard(text) {
+                // 创建临时textarea元素
+                const tempTextarea = $('<textarea>');
+                tempTextarea.val(text);
+                $('body').append(tempTextarea);
+                tempTextarea.select();
+                
+                try {
+                    // 执行复制命令
+                    document.execCommand('copy');
+                    showToast('复制成功');
+                } catch (err) {
+                    showToast('复制失败，请手动复制');
+                }
+                
+                // 移除临时textarea元素
+                tempTextarea.remove();
+            }
+
+            // 显示Toast提示函数
+            function showToast(message) {
+                const toast = $('#toast');
+                toast.text(message);
+                toast.addClass('show');
+                
+                // 3秒后隐藏Toast
+                setTimeout(function() {
+                    toast.removeClass('show');
+                }, 3000);
+            }
+
+            // 页面加载完成后自动填充示例文本并加密
+            $('#input-text').val(exampleText);
+            $('#encrypt-btn').click();
+        });
+    </script>
+</body>
+</html>
