@@ -59,19 +59,21 @@
         .title {
             font-size: 2.8rem;
             font-weight: 700;
-            background: linear-gradient(90deg, #06b6d4, #22d3ee, #06b6d4);
+            /* 融入副标题的核心青色#00f0ff，增强呼应 */
+            background: linear-gradient(90deg, #06b6d4, #00f0ff, #06b6d4);
             background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            animation: gradient 3s ease infinite;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+            /* 动画时长稍长于副标题（4s），形成节奏差 */
+            animation: gradient 4s ease infinite;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
         }
 
         /* 副标题样式 - 新增自动字体流光特效 */
         .subtitle {
             font-size: 1.1rem;
+            margin-top: 15px; /* 新增：标题和副标题的间距，可根据需求调整数值（如20px/25px） */
             margin-bottom: 25px;
             letter-spacing: 1px;
             /* 字体流光渐变 */
@@ -258,6 +260,8 @@
             .tool-name { font-size: 0.85rem; }
         }
     </style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSJub25lIj48cmVjdCB4PSIxMCIgeT0iMzUiIHdpZHRoPSI4MCIgaGVpZ2h0PSI1MCIgcng9IjUiIGZpbGw9IiMwMGYwZmYiIHN0cm9rZT0iIzBlNzQ5MCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHJlY3QgeD0iMjAiIHk9IjI1IiB3aWR0aD0iNjAiIGhlaWdodD0iMTUiIHJ4PSIzIiBmaWxsPSIjMDBmMGZmIiBzdHJva2U9IiMwZTc0OTAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0zNSAyNSBDMzUgMTggNDIgMTIgNTAgMTIgQzU4IDEyIDY1IDE4IDY1IDI1IiBzdHJva2U9IiMwZTc0OTAiIHN0cm9rZS13aWR0aD0iNCIgZmlsbD0ibm9uZSIvPjxyZWN0IHg9IjQ1IiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiByeD0iMiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iIzBlNzQ5MCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+">
+    
 </head>
 <body>
     <div class="bg-grid"></div>
@@ -265,7 +269,7 @@
     <div class="container">
         <header class="header">
             <h1 class="title">大星精选免费工具</h1>
-            <p class="subtitle">AI生成 | 精选收集 | 免费使用</p>
+            <p class="subtitle">AI创造 | 精选收集 | 免费使用</p>
             
             <div class="search-container">
                 <input type="text" id="toolSearch" class="search-input" placeholder="输入关键字查找工具...">
@@ -279,7 +283,7 @@
         </main>
 
         <footer class="footer">
-            <p>创造 AI | 共 <span id="tool-count">0</span> 个实用工具</p>
+            <p>创造AI | 共 <span id="tool-count">0</span> 个实用工具</p>
         </footer>
     </div>
 
@@ -304,6 +308,7 @@
             { name: '科学计算器', file: './科学计算器/index.html' },
             
             { name: 'UUID生成器', file: 'UUID生成器.html' },
+            { name: '图片压缩工具', file: '图片压缩工具.html' },
         ];
 
         $(document).ready(function() {
