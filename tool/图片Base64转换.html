@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片与Base64双向互转工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* 标签切换样式 */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: #f0f7ff;
+        }
+
+        .tab.active {
+            background: #1e88e5;
+            color: white;
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: #1e88e5;
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        /* 上传区域样式 */
+        .upload-area {
+            border: 3px dashed #b3d9ff;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            background: #f0f7ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: #1e88e5;
+            background: #e3f2fd;
+        }
+
+        .upload-area .main-text {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1e88e5;
+            margin-bottom: 10px;
+        }
+
+        .upload-area .sub-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #1e88e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976d2;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #43a047;
+        }
+
+        .btn-success:disabled {
+            background: #a5d6a7;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53935;
+        }
+
+        /* 结果区域布局 */
+        .result-container {
+            display: flex;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .result-container {
+                flex-direction: column;
+            }
+        }
+
+        .preview-section,
+        .output-section {
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        /* 预览区域 */
+        .preview-box {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            overflow: hidden;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: #999;
+        }
+
+        .preview-placeholder .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 400px;
+            display: none;
+        }
+
+        /* 文本域样式 */
+        .text-area {
+            width: 100%;
+            min-height: 250px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.6;
+            resize: vertical;
+            color: #333;
+            background: #fafafa;
+        }
+
+        .text-area:focus {
+            outline: none;
+            border-color: #1e88e5;
+            background: white;
+        }
+
+        /* 按钮组 */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* 隐藏的文件输入 */
+        #fileInput {
+            display: none;
+        }
+
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #f44336;
+        }
+
+        .toast.success {
+            background: #4caf50;
+        }
+
+        /* Base64转图片特定样式 */
+        .input-section {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标签切换 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="image-to-base64">图片转Base64</button>
+            <button class="tab" data-tab="base64-to-image">Base64转图片</button>
+        </div>
+
+        <!-- 图片转Base64面板 -->
+        <div id="image-to-base64-panel" class="tab-panel">
+            <div class="card">
+                <div class="card-header">上传图片</div>
+                <div class="card-body">
+                    <!-- 上传区域 -->
+                    <div class="upload-area" id="uploadArea">
+                        <div class="main-text">拖放图片到此处</div>
+                        <div class="sub-text">或点击选择图片文件 (支持JPG, PNG, GIF, 最大2MB)</div>
+                        <button class="btn btn-primary">选择图片</button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif">
+
+                    <!-- 结果区域 -->
+                    <div class="result-container">
+                        <div class="preview-section">
+                            <div class="section-title">图片预览</div>
+                            <div class="preview-box">
+                                <div class="preview-placeholder">
+                                    <div class="icon">🖼️</div>
+                                    <div>图片预览</div>
+                                </div>
+                                <img class="preview-image" id="previewImage">
+                            </div>
+                        </div>
+                        <div class="output-section">
+                            <div class="section-title">Base64编码结果：</div>
+                            <textarea class="text-area" id="base64Output" placeholder="Base64编码将显示在这里..." readonly></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 按钮组 -->
+                    <div class="button-group">
+                        <button class="btn btn-success" id="copyBtn" disabled>复制编码</button>
+                        <button class="btn btn-danger" id="clearBtn">清空所有</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Base64转图片面板 -->
+        <div id="base64-to-image-panel" class="tab-panel" style="display: none;">
+            <div class="card">
+                <div class="card-header">Base64转图片</div>
+                <div class="card-body">
+                    <!-- 输入区域 -->
+                    <div class="input-section">
+                        <div class="section-title">输入Base64字符串：</div>
+                        <textarea class="text-area" id="base64Input" placeholder="请粘贴Base64字符串（支持带Data URI头或纯Base64内容）..."></textarea>
+                    </div>
+
+                    <!-- 按钮组 -->
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="convertBtn">转换为图片</button>
+                        <button class="btn btn-success" id="downloadBtn" style="display: none;">下载图片</button>
+                        <button class="btn btn-danger" id="clearBtn2">清空</button>
+                    </div>
+
+                    <!-- 预览区域 -->
+                    <div class="result-container" style="margin-top: 25px;">
+                        <div class="preview-section" style="flex: 1;">
+                            <div class="section-title">图片预览</div>
+                            <div class="preview-box">
+                                <div class="preview-placeholder" id="previewPlaceholder2">
+                                    <div class="icon">🖼️</div>
+                                    <div>图片预览</div>
+                                </div>
+                                <img class="preview-image" id="previewImage2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        $(document).ready(function() {
+            // ==================== 通用功能 ====================
+            
+            // 显示提示消息
+            function showToast(message, type = 'normal') {
+                const $toast = $('#toast');
+                $toast.text(message)
+                    .removeClass('error success')
+                    .addClass(type)
+                    .addClass('show');
+                
+                setTimeout(() => {
+                    $toast.removeClass('show');
+                }, 2500);
+            }
+
+            // 检查文件类型
+            function isValidFileType(file) {
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                return validTypes.includes(file.type);
+            }
+
+            // 检查文件大小 (2MB)
+            function isValidFileSize(file) {
+                const maxSize = 2 * 1024 * 1024;
+                return file.size <= maxSize;
+            }
+
+            // ==================== 标签切换 ====================
+            
+            $('.tab').on('click', function() {
+                const tabName = $(this).data('tab');
+                
+                // 更新标签状态
+                $('.tab').removeClass('active');
+                $(this).addClass('active');
+                
+                // 切换面板
+                $('.tab-panel').hide();
+                $('#' + tabName + '-panel').show();
+            });
+
+            // ==================== 图片转Base64 ====================
+            
+            const $uploadArea = $('#uploadArea');
+            const $fileInput = $('#fileInput');
+            const $previewImage = $('#previewImage');
+            const $base64Output = $('#base64Output');
+            const $copyBtn = $('#copyBtn');
+            const $clearBtn = $('#clearBtn');
+
+            // 点击上传区域
+            $uploadArea.on('click', function(e) {
+                if (!$(e.target).is('.btn')) {
+                    $fileInput.click();
+                }
+            });
+
+            // 点击选择图片按钮
+            $uploadArea.find('.btn').on('click', function(e) {
+                e.stopPropagation();
+                $fileInput.click();
+            });
+
+            // 拖拽事件
+            $uploadArea.on('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $uploadArea.addClass('drag-over');
+            });
+
+            $uploadArea.on('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $uploadArea.removeClass('drag-over');
+            });
+
+            $uploadArea.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $uploadArea.removeClass('drag-over');
+                
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            // 文件选择
+            $fileInput.on('change', function(e) {
+                if (this.files.length > 0) {
+                    handleFile(this.files[0]);
+                }
+            });
+
+            // 处理文件
+            function handleFile(file) {
+                // 验证文件类型
+                if (!isValidFileType(file)) {
+                    showToast('仅支持 JPG、PNG、GIF 格式的图片', 'error');
+                    return;
+                }
+
+                // 验证文件大小
+                if (!isValidFileSize(file)) {
+                    showToast('文件大小不能超过 2MB', 'error');
+                    return;
+                }
+
+                // 读取文件并转换
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    
+                    // 显示预览
+                    $previewImage.attr('src', base64).show();
+                    $previewImage.siblings('.preview-placeholder').hide();
+                    
+                    // 显示Base64结果
+                    $base64Output.val(base64);
+                    
+                    // 启用复制按钮
+                    $copyBtn.prop('disabled', false);
+                };
+
+                reader.onerror = function() {
+                    showToast('文件读取失败，请重试', 'error');
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            // 复制Base64
+            $copyBtn.on('click', function() {
+                const base64 = $base64Output.val();
+                if (!base64) return;
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(base64).then(function() {
+                        const originalText = $copyBtn.text();
+                        $copyBtn.text('复制成功');
+                        setTimeout(() => {
+                            $copyBtn.text(originalText);
+                        }, 2000);
+                        showToast('复制成功', 'success');
+                    }).catch(function() {
+                        fallbackCopy(base64);
+                    });
+                } else {
+                    fallbackCopy(base64);
+                }
+            });
+
+            // 降级复制方案
+            function fallbackCopy(text) {
+                const $temp = $('<textarea>');
+                $temp.val(text).css({
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    opacity: 0
+                });
+                $('body').append($temp);
+                $temp[0].select();
+                
+                try {
+                    document.execCommand('copy');
+                    const originalText = $copyBtn.text();
+                    $copyBtn.text('复制成功');
+                    setTimeout(() => {
+                        $copyBtn.text(originalText);
+                    }, 2000);
+                    showToast('复制成功', 'success');
+                } catch (e) {
+                    showToast('复制失败，请手动复制', 'error');
+                }
+                
+                $temp.remove();
+            }
+
+            // 清空所有
+            $clearBtn.on('click', function() {
+                $fileInput.val('');
+                $previewImage.attr('src', '').hide();
+                $previewImage.siblings('.preview-placeholder').show();
+                $base64Output.val('');
+                $copyBtn.prop('disabled', true);
+            });
+
+            // ==================== Base64转图片 ====================
+            
+            const $base64Input = $('#base64Input');
+            const $convertBtn = $('#convertBtn');
+            const $downloadBtn = $('#downloadBtn');
+            const $clearBtn2 = $('#clearBtn2');
+            const $previewImage2 = $('#previewImage2');
+            const $previewPlaceholder2 = $('#previewPlaceholder2');
+
+            let currentImageData = null;
+
+            // 转换为图片
+            $convertBtn.on('click', function() {
+                let base64 = $base64Input.val().trim();
+                
+                if (!base64) {
+                    showToast('请输入Base64字符串', 'error');
+                    return;
+                }
+
+                // 如果没有Data URI头，尝试添加
+                if (!base64.startsWith('data:')) {
+                    // 尝试判断图片类型
+                    if (base64.startsWith('/9j/')) {
+                        base64 = 'data:image/jpeg;base64,' + base64;
+                    } else if (base64.startsWith('iVBORw0KGgo')) {
+                        base64 = 'data:image/png;base64,' + base64;
+                    } else if (base64.startsWith('R0lGODdh') || base64.startsWith('R0lGODlh')) {
+                        base64 = 'data:image/gif;base64,' + base64;
+                    } else {
+                        // 默认尝试JPEG
+                        base64 = 'data:image/jpeg;base64,' + base64;
+                    }
+                }
+
+                // 尝试加载图片
+                const img = new Image();
+                img.onload = function() {
+                    $previewImage2.attr('src', base64).show();
+                    $previewPlaceholder2.hide();
+                    $downloadBtn.show();
+                    currentImageData = base64;
+                    showToast('转换成功', 'success');
+                };
+
+                img.onerror = function() {
+                    showToast('无效的Base64字符串，请检查输入', 'error');
+                };
+
+                img.src = base64;
+            });
+
+            // 下载图片
+            $downloadBtn.on('click', function() {
+                if (!currentImageData) return;
+
+                const link = document.createElement('a');
+                link.href = currentImageData;
+                link.download = 'converted-image.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast('图片已开始下载', 'success');
+            });
+
+            // 清空
+            $clearBtn2.on('click', function() {
+                $base64Input.val('');
+                $previewImage2.attr('src', '').hide();
+                $previewPlaceholder2.show();
+                $downloadBtn.hide();
+                currentImageData = null;
+            });
+
+            // 防止页面默认拖拽行为
+            $(document).on('dragover drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>
