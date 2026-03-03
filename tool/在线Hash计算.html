@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件哈希Hash在线计算工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* 页面顶部标题区 */
+        .header {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header h1::before {
+            content: "#";
+            margin-right: 8px;
+            color: #4CAF50;
+        }
+        
+        /* 文件上传核心区域 */
+        .upload-container {
+            background-color: #fff;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .upload-container.drag-over {
+            border-color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        
+        .upload-container .upload-text {
+            color: #6c757d;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .upload-container .btn-select-file {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .upload-container .btn-select-file:hover {
+            background-color: #45a049;
+        }
+        
+        .upload-container .upload-note {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* 文件列表 */
+        .file-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .file-info {
+            flex: 1;
+            margin-right: 15px;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .file-details {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .btn-remove-file {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-remove-file:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-clear-all {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-clear-all:hover {
+            background-color: #5a6268;
+        }
+        
+        /* 哈希算法选择区域 */
+        .algorithm-section {
+            margin-bottom: 20px;
+        }
+        
+        .algorithm-label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .algorithm-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .algorithm-btn {
+            background-color: #e8f5e9;
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .algorithm-btn:hover {
+            background-color: #c8e6c9;
+        }
+        
+        .algorithm-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        /* 计算操作按钮区 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-calculate {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-calculate:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        
+        .btn-calculate:disabled {
+            background-color: #a5d6a7;
+            cursor: not-allowed;
+        }
+        
+        .btn-reset {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-reset:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-cancel {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: none;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #f57c00;
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        /* 哈希计算结果展示区 */
+        .results-container {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .results-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .btn-copy-all {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-copy-all:hover {
+            background-color: #45a049;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .result-file-name {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .result-algorithm {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+        
+        .result-hash-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .result-hash {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            background-color: #f8f9fa;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .btn-copy {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        
+        .btn-copy:hover {
+            background-color: #45a049;
+        }
+        
+        /* 底部安全说明区域 */
+        .footer-note {
+            color: #6c757d;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.8;
+        }
+        
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            z-index: 1000;
+            display: none;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .toast.show {
+            display: block;
+            animation: fadeInOut 3s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+        
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .upload-container {
+                padding: 30px 15px;
+            }
+            
+            .algorithm-buttons {
+                gap: 8px;
+            }
+            
+            .algorithm-btn {
+                padding: 10px 14px;
+                flex: 1 1 calc(33.333% - 8px);
+                min-width: 0;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-calculate, .btn-reset, .btn-cancel {
+                width: 100%;
+            }
+            
+            .result-hash-container {
+                flex-direction: column;
+            }
+            
+            .btn-copy {
+                width: 100%;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .file-info {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .btn-remove-file {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面顶部标题区 -->
+        <div class="header">
+            <h1>文件哈希Hash在线计算工具</h1>
+        </div>
+        
+        <!-- 文件上传核心区域 -->
+        <div class="upload-container" id="uploadContainer">
+            <div class="upload-text">拖放文件到此处或</div>
+            <button class="btn-select-file" id="btnSelectFile">选择文件</button>
+            <input type="file" id="fileInput" multiple style="display: none;">
+            <div class="upload-note">文件处理完全在浏览器中进行，不会上传到服务器</div>
+            
+            <!-- 文件列表 -->
+            <div class="file-list" id="fileList"></div>
+        </div>
+        
+        <!-- 哈希算法选择区域 -->
+        <div class="algorithm-section">
+            <label class="algorithm-label">选择哈希算法:</label>
+            <div class="algorithm-buttons">
+                <button class="algorithm-btn active" data-algorithm="MD5">MD5</button>
+                <button class="algorithm-btn" data-algorithm="SHA-1">SHA-1</button>
+                <button class="algorithm-btn" data-algorithm="SHA-224">SHA-224</button>
+                <button class="algorithm-btn" data-algorithm="SHA-256">SHA-256</button>
+                <button class="algorithm-btn" data-algorithm="SHA-384">SHA-384</button>
+                <button class="algorithm-btn" data-algorithm="SHA-512">SHA-512</button>
+                <button class="algorithm-btn" data-algorithm="CRC32">CRC32</button>
+            </div>
+        </div>
+        
+        <!-- 计算操作按钮区 -->
+        <div class="action-buttons">
+            <button class="btn-calculate" id="btnCalculate">计算哈希值</button>
+            <button class="btn-reset" id="btnReset">重置</button>
+            <button class="btn-cancel" id="btnCancel">取消计算</button>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0%</div>
+        </div>
+        
+        <!-- 哈希计算结果展示区 -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <div class="results-title">计算结果</div>
+                <button class="btn-copy-all" id="btnCopyAll">一键复制全部结果</button>
+            </div>
+            <div id="resultsList"></div>
+        </div>
+        
+        <!-- 底部安全说明区域 -->
+        <div class="footer-note">
+            本工具所有哈希计算均在用户本地浏览器中完成，文件不会上传到任何服务器，全程保障文件数据安全；支持全格式文件哈希计算，覆盖MD5、SHA全系列、CRC32等主流哈希算法。
+        </div>
+    </div>
+    
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        $(document).ready(function() {
+            // 全局变量
+            let selectedFiles = [];
+            let currentAlgorithm = 'MD5';
+            let isCalculating = false;
+            let cancelCalculation = false;
+            
+            // 初始化
+            init();
+            
+            // 初始化函数
+            function init() {
+                bindEvents();
+            }
+            
+            // 绑定事件
+            function bindEvents() {
+                // 文件选择按钮
+                $('#btnSelectFile').on('click', function() {
+                    $('#fileInput').click();
+                });
+                
+                // 文件输入变化
+                $('#fileInput').on('change', function(e) {
+                    handleFiles(e.target.files);
+                });
+                
+                // 拖拽上传
+                const uploadContainer = $('#uploadContainer')[0];
+                
+                uploadContainer.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    $(this).addClass('drag-over');
+                });
+                
+                uploadContainer.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    $(this).removeClass('drag-over');
+                });
+                
+                uploadContainer.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    $(this).removeClass('drag-over');
+                    handleFiles(e.dataTransfer.files);
+                });
+                
+                // 算法选择
+                $('.algorithm-btn').on('click', function() {
+                    $('.algorithm-btn').removeClass('active');
+                    $(this).addClass('active');
+                    currentAlgorithm = $(this).data('algorithm');
+                    
+                    // 如果已有结果，清空结果
+                    if ($('#resultsContainer').is(':visible')) {
+                        $('#resultsContainer').hide();
+                        $('#resultsList').empty();
+                    }
+                });
+                
+                // 计算哈希值
+                $('#btnCalculate').on('click', function() {
+                    if (selectedFiles.length === 0) {
+                        showToast('请先选择需要计算哈希的文件');
+                        return;
+                    }
+                    
+                    calculateHashes();
+                });
+                
+                // 重置
+                $('#btnReset').on('click', function() {
+                    reset();
+                });
+                
+                // 取消计算
+                $('#btnCancel').on('click', function() {
+                    cancelCalculation = true;
+                });
+                
+                // 一键复制全部结果
+                $('#btnCopyAll').on('click', function() {
+                    copyAllResults();
+                });
+                
+                // 页面刷新/关闭前提示
+                window.addEventListener('beforeunload', function(e) {
+                    if (isCalculating) {
+                        e.preventDefault();
+                        e.returnValue = '计算正在进行中，确定要离开吗？';
+                        return e.returnValue;
+                    }
+                });
+            }
+            
+            // 处理文件
+            function handleFiles(files) {
+                if (files.length === 0) return;
+                
+                // 添加新文件到列表
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    // 检查是否已添加相同文件
+                    const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified);
+                    if (!isDuplicate) {
+                        selectedFiles.push(file);
+                    }
+                }
+                
+                renderFileList();
+            }
+            
+            // 渲染文件列表
+            function renderFileList() {
+                const fileList = $('#fileList');
+                fileList.empty();
+                
+                if (selectedFiles.length === 0) {
+                    return;
+                }
+                
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    const fileSize = formatFileSize(file.size);
+                    const fileType = file.type || '未知类型';
+                    
+                    const fileItem = $('<div class="file-item"></div>');
+                    const fileInfo = $('<div class="file-info"></div>');
+                    fileInfo.append(`<div class="file-name">${escapeHtml(file.name)}</div>`);
+                    fileInfo.append(`<div class="file-details">${fileSize} | ${fileType}</div>`);
+                    
+                    const removeBtn = $('<button class="btn-remove-file">删除</button>');
+                    removeBtn.on('click', function() {
+                        selectedFiles.splice(i, 1);
+                        renderFileList();
+                    });
+                    
+                    fileItem.append(fileInfo);
+                    fileItem.append(removeBtn);
+                    fileList.append(fileItem);
+                }
+                
+                const clearAllBtn = $('<button class="btn-clear-all">清空全部文件</button>');
+                clearAllBtn.on('click', function() {
+                    selectedFiles = [];
+                    renderFileList();
+                });
+                fileList.append(clearAllBtn);
+            }
+            
+            // 计算哈希值
+            async function calculateHashes() {
+                isCalculating = true;
+                cancelCalculation = false;
+                
+                // 更新UI状态
+                $('#btnCalculate').prop('disabled', true);
+                $('#btnCancel').show();
+                $('#progressContainer').show();
+                $('#resultsContainer').hide();
+                $('#resultsList').empty();
+                
+                const results = [];
+                const totalFiles = selectedFiles.length;
+                
+                try {
+                    for (let i = 0; i < totalFiles; i++) {
+                        if (cancelCalculation) {
+                            showToast('计算已取消');
+                            break;
+                        }
+                        
+                        const file = selectedFiles[i];
+                        updateProgress((i / totalFiles) * 100, `正在计算: ${escapeHtml(file.name)} (${i+1}/${totalFiles})`);
+                        
+                        const hash = await calculateFileHash(file, currentAlgorithm);
+                        results.push({
+                            file: file,
+                            algorithm: currentAlgorithm,
+                            hash: hash
+                        });
+                    }
+                    
+                    if (!cancelCalculation) {
+                        updateProgress(100, '计算完成');
+                        renderResults(results);
+                    }
+                } catch (error) {
+                    console.error('计算哈希值时出错:', error);
+                    showToast('计算出错: ' + error.message);
+                } finally {
+                    isCalculating = false;
+                    $('#btnCalculate').prop('disabled', false);
+                    $('#btnCancel').hide();
+                }
+            }
+            
+            // 计算单个文件的哈希值
+            function calculateFileHash(file, algorithm) {
+                return new Promise((resolve, reject) => {
+                    const chunkSize = 2 * 1024 * 1024; // 2MB per chunk
+                    const chunks = Math.ceil(file.size / chunkSize);
+                    let currentChunk = 0;
+                    
+                    if (algorithm === 'MD5') {
+                        const spark = new SparkMD5.ArrayBuffer();
+                        const reader = new FileReader();
+                        
+                        reader.onerror = function() {
+                            reject(new Error('文件读取失败'));
+                        };
+                        
+                        reader.onload = function(e) {
+                            if (cancelCalculation) {
+                                reject(new Error('计算已取消'));
+                                return;
+                            }
+                            
+                            spark.append(e.target.result);
+                            currentChunk++;
+                            
+                            // 更新进度
+                            const fileProgress = (currentChunk / chunks) * 100;
+                            const totalProgress = ((selectedFiles.indexOf(file) + fileProgress / 100) / selectedFiles.length) * 100;
+                            updateProgress(totalProgress, `正在计算: ${escapeHtml(file.name)} (${Math.round(fileProgress)}%)`);
+                            
+                            if (currentChunk < chunks) {
+                                loadNextChunk();
+                            } else {
+                                resolve(spark.end());
+                            }
+                        };
+                        
+                        function loadNextChunk() {
+                            const start = currentChunk * chunkSize;
+                            const end = Math.min(start + chunkSize, file.size);
+                            reader.readAsArrayBuffer(file.slice(start, end));
+                        }
+                        
+                        loadNextChunk();
+                    } else if (algorithm === 'CRC32') {
+                        // 使用CryptoJS计算CRC32
+                        const reader = new FileReader();
+                        
+                        reader.onerror = function() {
+                            reject(new Error('文件读取失败'));
+                        };
+                        
+                        reader.onload = function(e) {
+                            if (cancelCalculation) {
+                                reject(new Error('计算已取消'));
+                                return;
+                            }
+                            
+                            const wordArray = CryptoJS.lib.WordArray.create(e.target.result);
+                            const crc32 = CryptoJS.CRC32(wordArray);
+                            resolve(crc32.toString(CryptoJS.enc.Hex).toUpperCase());
+                        };
+                        
+                        reader.readAsArrayBuffer(file);
+                    } else {
+                        // SHA系列算法
+                        const reader = new FileReader();
+                        let hash;
+                        
+                        // 选择对应的SHA算法
+                        switch(algorithm) {
+                            case 'SHA-1':
+                                hash = CryptoJS.algo.SHA1.create();
+                                break;
+                            case 'SHA-224':
+                                hash = CryptoJS.algo.SHA224.create();
+                                break;
+                            case 'SHA-256':
+                                hash = CryptoJS.algo.SHA256.create();
+                                break;
+                            case 'SHA-384':
+                                hash = CryptoJS.algo.SHA384.create();
+                                break;
+                            case 'SHA-512':
+                                hash = CryptoJS.algo.SHA512.create();
+                                break;
+                            default:
+                                reject(new Error('不支持的算法: ' + algorithm));
+                                return;
+                        }
+                        
+                        reader.onerror = function() {
+                            reject(new Error('文件读取失败'));
+                        };
+                        
+                        reader.onload = function(e) {
+                            if (cancelCalculation) {
+                                reject(new Error('计算已取消'));
+                                return;
+                            }
+                            
+                            // 将ArrayBuffer转换为WordArray
+                            const wordArray = CryptoJS.lib.WordArray.create(e.target.result);
+                            hash.update(wordArray);
+                            currentChunk++;
+                            
+                            // 更新进度
+                            const fileProgress = (currentChunk / chunks) * 100;
+                            const totalProgress = ((selectedFiles.indexOf(file) + fileProgress / 100) / selectedFiles.length) * 100;
+                            updateProgress(totalProgress, `正在计算: ${escapeHtml(file.name)} (${Math.round(fileProgress)}%)`);
+                            
+                            if (currentChunk < chunks) {
+                                loadNextChunk();
+                            } else {
+                                const finalHash = hash.finalize();
+                                resolve(finalHash.toString(CryptoJS.enc.Hex));
+                            }
+                        };
+                        
+                        function loadNextChunk() {
+                            const start = currentChunk * chunkSize;
+                            const end = Math.min(start + chunkSize, file.size);
+                            reader.readAsArrayBuffer(file.slice(start, end));
+                        }
+                        
+                        loadNextChunk();
+                    }
+                });
+            }
+            
+            // 渲染结果
+            function renderResults(results) {
+                const resultsContainer = $('#resultsContainer');
+                const resultsList = $('#resultsList');
+                resultsList.empty();
+                
+                for (let i = 0; i < results.length; i++) {
+                    const result = results[i];
+                    const resultItem = $('<div class="result-item"></div>');
+                    
+                    resultItem.append(`<div class="result-file-name">${escapeHtml(result.file.name)}</div>`);
+                    resultItem.append(`<div class="result-algorithm">算法: ${result.algorithm}</div>`);
+                    
+                    const hashContainer = $('<div class="result-hash-container"></div>');
+                    hashContainer.append(`<div class="result-hash">${result.hash}</div>`);
+                    
+                    const copyBtn = $('<button class="btn-copy">复制</button>');
+                    copyBtn.on('click', function() {
+                        copyToClipboard(result.hash, '哈希值已复制到剪贴板');
+                    });
+                    
+                    hashContainer.append(copyBtn);
+                    resultItem.append(hashContainer);
+                    resultsList.append(resultItem);
+                }
+                
+                resultsContainer.show();
+                
+                // 如果只有一个文件，隐藏"一键复制全部"按钮
+                if (results.length <= 1) {
+                    $('#btnCopyAll').hide();
+                } else {
+                    $('#btnCopyAll').show();
+                }
+            }
+            
+            // 复制全部结果
+            function copyAllResults() {
+                let text = '';
+                $('.result-item').each(function() {
+                    const fileName = $(this).find('.result-file-name').text();
+                    const algorithm = $(this).find('.result-algorithm').text().replace('算法: ', '');
+                    const hash = $(this).find('.result-hash').text();
+                    text += `文件名: ${fileName}\n算法: ${algorithm}\n哈希值: ${hash}\n\n`;
+                });
+                
+                copyToClipboard(text.trim(), '全部结果已复制到剪贴板');
+            }
+            
+            // 复制到剪贴板
+            function copyToClipboard(text, successMessage) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showToast(successMessage);
+                    }).catch(function(err) {
+                        console.error('复制失败:', err);
+                        fallbackCopyToClipboard(text, successMessage);
+                    });
+                } else {
+                    fallbackCopyToClipboard(text, successMessage);
+                }
+            }
+            
+            // 降级复制方法
+            function fallbackCopyToClipboard(text, successMessage) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';  // 避免滚动到底部
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showToast(successMessage);
+                    } else {
+                        showToast('复制失败，请手动复制');
+                    }
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    showToast('复制失败，请手动复制');
+                }
+                
+                document.body.removeChild(textArea);
+            }
+            
+            // 更新进度
+            function updateProgress(percent, text) {
+                $('#progressFill').css('width', percent + '%');
+                $('#progressText').text(text || Math.round(percent) + '%');
+            }
+            
+            // 重置
+            function reset() {
+                selectedFiles = [];
+                currentAlgorithm = 'MD5';
+                isCalculating = false;
+                cancelCalculation = false;
+                
+                $('#fileInput').val('');
+                $('#fileList').empty();
+                $('.algorithm-btn').removeClass('active');
+                $('.algorithm-btn[data-algorithm="MD5"]').addClass('active');
+                $('#progressContainer').hide();
+                $('#resultsContainer').hide();
+                $('#resultsList').empty();
+                $('#btnCalculate').prop('disabled', false);
+                $('#btnCancel').hide();
+                updateProgress(0, '0%');
+            }
+            
+            // 显示Toast提示
+            function showToast(message) {
+                const toast = $('#toast');
+                toast.text(message);
+                toast.addClass('show');
+                
+                setTimeout(function() {
+                    toast.removeClass('show');
+                }, 3000);
+            }
+            
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // HTML转义
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        });
+    </script>
+</body>
+</html>
