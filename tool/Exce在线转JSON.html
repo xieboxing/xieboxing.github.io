@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel转JSON - 在线转换工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 页面顶部标题区 */
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+            color: #27ae60;
+        }
+
+        /* 输入输出区域通用样式 */
+        .editor-container {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .editor-wrapper {
+            display: flex;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            width: 50px;
+            background: #f0f0f0;
+            color: #999;
+            text-align: right;
+            padding: 10px 5px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: hidden;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .editor-area {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+        }
+
+        .editor-area textarea {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            border: none;
+            padding: 10px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+        }
+
+        .result-display {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            padding: 10px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* JSON语法高亮 */
+        .json-key { color: #a52a2a; font-weight: bold; }
+        .json-string { color: #000; }
+        .json-number { color: #0000ff; }
+        .json-boolean { color: #0000ff; }
+        .json-null { color: #808080; }
+        .json-bracket { color: #000; }
+
+        /* 按钮区域 */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+            min-height: 40px;
+        }
+
+        .btn-primary {
+            background-color: #27ae60;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #219a52;
+        }
+
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d0d0d0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 设置区域 */
+        .settings-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 15px;
+            border: 1px solid #d4edda;
+            border-radius: 4px;
+            background-color: #f0fff4;
+            margin-bottom: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-item label {
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .setting-item input,
+        .setting-item select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            min-width: 200px;
+        }
+
+        .setting-item input:focus,
+        .setting-item select:focus {
+            border-color: #27ae60;
+        }
+
+        /* 辅助功能导航区 */
+        .explore-area {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .explore-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .explore-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .explore-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .explore-tag:hover {
+            background-color: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        .explore-tag i {
+            color: #27ae60;
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background-color: #333;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: #27ae60;
+        }
+
+        .toast.error {
+            background-color: #e74c3c;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .editor-wrapper {
+                height: 250px;
+            }
+
+            .line-numbers {
+                width: 40px;
+                font-size: 12px;
+            }
+
+            .editor-area textarea,
+            .result-display {
+                font-size: 12px;
+            }
+
+            .button-group {
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+                flex: 1 1 calc(50% - 4px);
+                justify-content: center;
+            }
+
+            .checkbox-group {
+                margin-left: 0;
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .settings-area {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .setting-item {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .setting-item input,
+            .setting-item select {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .explore-area {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面顶部标题区 -->
+        <div class="header">
+            <h1><i class="fa fa-exchange"></i>Excel/CSV 转 JSON</h1>
+        </div>
+
+        <!-- 源数据输入区域 -->
+        <div class="editor-container">
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="inputLineNumbers">1</div>
+                <div class="editor-area">
+                    <textarea id="inputData" placeholder="请输入Excel/CSV/制表符分隔的表格数据，首行将作为JSON的表头key"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心操作按钮区 -->
+        <div class="button-group">
+            <button class="btn btn-primary" id="convertBtn">
+                <i class="fa fa-refresh"></i>转换
+            </button>
+            <button class="btn btn-secondary" id="demoBtn">
+                <i class="fa fa-lightbulb-o"></i>来个Demo
+            </button>
+            <button class="btn btn-secondary" id="clearBtn">
+                <i class="fa fa-trash-o"></i>清空
+            </button>
+            <button class="btn btn-secondary" id="copyBtn">
+                <i class="fa fa-copy"></i>复制
+            </button>
+            <button class="btn btn-secondary" id="downloadBtn">
+                <i class="fa fa-download"></i>下载
+            </button>
+            <div class="checkbox-group">
+                <input type="checkbox" id="forceString">
+                <label for="forceString">值全部用字符串</label>
+            </div>
+        </div>
+
+        <!-- 转换设置区域 -->
+        <div class="settings-area">
+            <div class="setting-item">
+                <label for="delimiter">分隔符</label>
+                <input type="text" id="delimiter" placeholder="默认是制表符">
+            </div>
+            <div class="setting-item">
+                <label for="convertType">转换类型</label>
+                <select id="convertType">
+                    <option value="object">按行转成对象</option>
+                    <option value="array">按行转成数组</option>
+                </select>
+            </div>
+        </div>
+
+
+        <!-- 转换结果展示区域 -->
+        <div class="editor-container">
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="resultLineNumbers">1</div>
+                <div class="editor-area">
+                    <div class="result-display" id="resultData" contenteditable="true"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== 工具函数模块 ====================
+        
+        // Toast提示函数
+        function showToast(message, type = 'default') {
+            const $toast = $('#toast');
+            $toast.text(message).removeClass('success error').addClass(type);
+            if (type === 'success' || type === 'error') {
+                $toast.addClass(type);
+            }
+            $toast.addClass('show');
+            setTimeout(() => {
+                $toast.removeClass('show');
+            }, 3000);
+        }
+
+        // 更新行号
+        function updateLineNumbers(textareaId, lineNumbersId) {
+            const $textarea = $('#' + textareaId);
+            const $lineNumbers = $('#' + lineNumbersId);
+            const lines = $textarea.val().split('\n');
+            const lineCount = lines.length;
+            let lineNumbersHtml = '';
+            for (let i = 1; i <= lineCount; i++) {
+                lineNumbersHtml += i + '\n';
+            }
+            $lineNumbers.text(lineNumbersHtml || '1');
+        }
+
+        // 同步滚动
+        function syncScroll(textareaId, lineNumbersId) {
+            const $textarea = $('#' + textareaId);
+            const $lineNumbers = $('#' + lineNumbersId);
+            $lineNumbers.scrollTop($textarea.scrollTop());
+        }
+
+        // ==================== CSV解析模块 ====================
+        
+        // 解析CSV/表格数据
+        function parseCSV(text, delimiter) {
+            if (!text || !text.trim()) {
+                return [];
+            }
+
+            // 使用指定分隔符或默认制表符
+            const delim = delimiter || '\t';
+            
+            // 行分割正则，处理引号内的换行
+            const lines = [];
+            let currentLine = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        currentLine += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if ((char === '\n' || (char === '\r' && nextChar === '\n')) && !inQuotes) {
+                    lines.push(currentLine);
+                    currentLine = '';
+                    if (char === '\r') i++;
+                } else if (char === '\r' && !inQuotes) {
+                    lines.push(currentLine);
+                    currentLine = '';
+                } else {
+                    currentLine += char;
+                }
+            }
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+
+            // 解析每一行
+            const result = [];
+            for (const line of lines) {
+                if (!line.trim()) continue; // 跳过空行
+                
+                const values = [];
+                let currentValue = '';
+                let inQuotesCell = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const nextChar = line[i + 1];
+                    
+                    if (char === '"') {
+                        if (inQuotesCell && nextChar === '"') {
+                            currentValue += '"';
+                            i++;
+                        } else {
+                            inQuotesCell = !inQuotesCell;
+                        }
+                    } else if (char === delim && !inQuotesCell) {
+                        values.push(currentValue.trim());
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue.trim());
+                result.push(values);
+            }
+
+            return result;
+        }
+
+        // ==================== JSON转换模块 ====================
+        
+        // 转换值类型
+        function convertValue(value, forceString) {
+            if (forceString) {
+                return value;
+            }
+            
+            // 尝试转换为数字
+            if (!isNaN(value) && value !== '' && !isNaN(parseFloat(value))) {
+                return parseFloat(value);
+            }
+            
+            // 尝试转换为布尔值
+            const lowerValue = value.toLowerCase();
+            if (lowerValue === 'true') return true;
+            if (lowerValue === 'false') return false;
+            
+            // 尝试转换为null
+            if (lowerValue === 'null' || value === '') return null;
+            
+            return value;
+        }
+
+        // 转换为对象数组
+        function convertToObjects(data, forceString) {
+            if (data.length < 2) return [];
+            
+            const headers = data[0];
+            const result = [];
+            
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                const obj = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    const key = headers[j] || `column${j}`;
+                    const value = row[j] !== undefined ? row[j] : '';
+                    obj[key] = convertValue(value, forceString);
+                }
+                
+                result.push(obj);
+            }
+            
+            return result;
+        }
+
+        // 转换为二维数组
+        function convertToArray(data, forceString) {
+            if (data.length === 0) return [];
+            
+            const result = [];
+            
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                const newRow = [];
+                
+                for (let j = 0; j < row.length; j++) {
+                    newRow.push(convertValue(row[j], forceString));
+                }
+                
+                result.push(newRow);
+            }
+            
+            return result;
+        }
+
+        // ==================== JSON语法高亮模块 ====================
+        
+        // JSON语法高亮
+        function syntaxHighlight(json) {
+            if (typeof json !== 'string') {
+                json = JSON.stringify(json, null, 2);
+            }
+            
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                        match = match.slice(0, -1) + '</span>:';
+                        return '<span class="' + cls + '">' + match;
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        // 更新结果行号
+        function updateResultLineNumbers() {
+            const $resultData = $('#resultData');
+            const $lineNumbers = $('#resultLineNumbers');
+            const text = $resultData.text();
+            const lines = text.split('\n');
+            const lineCount = lines.length;
+            let lineNumbersHtml = '';
+            for (let i = 1; i <= lineCount; i++) {
+                lineNumbersHtml += i + '\n';
+            }
+            $lineNumbers.text(lineNumbersHtml || '1');
+        }
+
+        // ==================== 核心转换逻辑 ====================
+        
+        let currentResult = null;
+
+        function doConvert() {
+            const inputText = $('#inputData').val();
+            const delimiter = $('#delimiter').val();
+            const convertType = $('#convertType').val();
+            const forceString = $('#forceString').is(':checked');
+
+            if (!inputText || !inputText.trim()) {
+                showToast('请输入需要转换的表格数据', 'error');
+                return;
+            }
+
+            try {
+                // 解析数据
+                const parsedData = parseCSV(inputText, delimiter);
+                
+                if (parsedData.length === 0) {
+                    showToast('未能解析到有效数据', 'error');
+                    return;
+                }
+
+                // 转换数据
+                let result;
+                if (convertType === 'object') {
+                    result = convertToObjects(parsedData, forceString);
+                } else {
+                    result = convertToArray(parsedData, forceString);
+                }
+
+                currentResult = result;
+                
+                // 显示结果（带语法高亮）
+                const jsonString = JSON.stringify(result, null, 2);
+                $('#resultData').html(syntaxHighlight(jsonString));
+                updateResultLineNumbers();
+                
+            } catch (e) {
+                console.error(e);
+                showToast('数据解析失败：' + e.message, 'error');
+            }
+        }
+
+        // ==================== Demo数据模块 ====================
+        
+        const demoData = `姓名	年龄	城市	职位	入职日期	是否在职
+张三	28	北京	前端工程师	2022-01-15	true
+李四	32	上海	产品经理	2021-06-20	true
+王五	25	深圳	设计师	2023-03-10	false
+赵六	35	杭州	技术总监	2020-09-01	true
+钱七	27	广州	测试工程师	2022-08-22	true`;
+
+        function loadDemo() {
+            $('#inputData').val(demoData);
+            updateLineNumbers('inputData', 'inputLineNumbers');
+            doConvert();
+            showToast('Demo数据已加载', 'success');
+        }
+
+        // ==================== 清空重置模块 ====================
+        
+        function clearAll() {
+            $('#inputData').val('');
+            $('#resultData').html('');
+            $('#delimiter').val('');
+            $('#convertType').val('object');
+            $('#forceString').prop('checked', false);
+            currentResult = null;
+            updateLineNumbers('inputData', 'inputLineNumbers');
+            $('#resultLineNumbers').text('1');
+            showToast('已清空', 'success');
+        }
+
+        // ==================== 复制功能模块 ====================
+        
+        function copyResult() {
+            const resultText = currentResult ? JSON.stringify(currentResult, null, 2) : '';
+            
+            if (!resultText) {
+                showToast('暂无转换结果可复制', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(resultText).then(() => {
+                    showToast('复制成功', 'success');
+                }).catch(() => {
+                    fallbackCopy(resultText);
+                });
+            } else {
+                fallbackCopy(resultText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const $textarea = $('<textarea>');
+            $textarea.val(text);
+            $textarea.css({
+                position: 'fixed',
+                top: '-9999px',
+                left: '-9999px'
+            });
+            $('body').append($textarea);
+            $textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('复制成功', 'success');
+            } catch (e) {
+                showToast('复制失败，请手动复制', 'error');
+            }
+            
+            $textarea.remove();
+        }
+
+        // ==================== 下载功能模块 ====================
+        
+        function downloadResult() {
+            const resultText = currentResult ? JSON.stringify(currentResult, null, 2) : '';
+            
+            if (!resultText) {
+                showToast('暂无转换结果可下载', 'error');
+                return;
+            }
+
+            const blob = new Blob([resultText], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const $a = $('<a>');
+            $a.attr('href', url);
+            $a.attr('download', '转换结果.json');
+            $a.css('display', 'none');
+            $('body').append($a);
+            $a[0].click();
+            $a.remove();
+            URL.revokeObjectURL(url);
+            showToast('下载已开始', 'success');
+        }
+
+        // ==================== 事件绑定模块 ====================
+        
+        $(document).ready(function() {
+            // 转换按钮
+            $('#convertBtn').on('click', doConvert);
+            
+            // Demo按钮
+            $('#demoBtn').on('click', loadDemo);
+            
+            // 清空按钮
+            $('#clearBtn').on('click', clearAll);
+            
+            // 复制按钮
+            $('#copyBtn').on('click', copyResult);
+            
+            // 下载按钮
+            $('#downloadBtn').on('click', downloadResult);
+            
+            // 输入框事件 - 更新行号和实时转换
+            $('#inputData').on('input', function() {
+                updateLineNumbers('inputData', 'inputLineNumbers');
+                // 防抖实时转换
+                clearTimeout(window.convertTimeout);
+                window.convertTimeout = setTimeout(doConvert, 500);
+            });
+            
+            // 输入框滚动同步
+            $('#inputData').on('scroll', function() {
+                syncScroll('inputData', 'inputLineNumbers');
+            });
+            
+            // 结果区滚动同步
+            $('#resultData').on('scroll', function() {
+                syncScroll('resultData', 'resultLineNumbers');
+            });
+            
+            // 设置项变化时实时转换
+            $('#delimiter, #convertType, #forceString').on('input change', function() {
+                if ($('#inputData').val().trim()) {
+                    clearTimeout(window.convertTimeout);
+                    window.convertTimeout = setTimeout(doConvert, 300);
+                }
+            });
+            
+            // 结果区编辑时更新行号
+            $('#resultData').on('input', function() {
+                updateResultLineNumbers();
+            });
+            
+            // 页面加载完成后自动加载Demo
+            loadDemo();
+        });
+    </script>
+</body>
+</html>
