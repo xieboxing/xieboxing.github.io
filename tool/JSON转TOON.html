@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -127,7 +128,7 @@
             min-width: 300px;
             background-color: #fff;
             border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -163,7 +164,7 @@
 
         .content-textarea:focus {
             border-color: #1e88e5;
-            box-shadow: 0 0 0 2px rgba(30,136,229,0.1);
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1);
         }
 
         /* 转换按钮区域 */
@@ -189,7 +190,7 @@
             transform: translateX(-50%);
             padding: 8px 16px;
             border-radius: 4px;
-            background-color: rgba(0,0,0,0.8);
+            background-color: rgba(0, 0, 0, 0.8);
             color: #fff;
             font-size: 14px;
             z-index: 9999;
@@ -202,11 +203,11 @@
         }
 
         .toast.success {
-            background-color: rgba(76,175,80,0.8);
+            background-color: rgba(76, 175, 80, 0.8);
         }
 
         .toast.error {
-            background-color: rgba(244,67,54,0.8);
+            background-color: rgba(244, 67, 54, 0.8);
         }
 
         /* 响应式适配 - 移动端（小于768px） */
@@ -247,6 +248,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- 顶部导航栏 -->
     <div class="header">
@@ -290,7 +292,7 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        $(function() {
+        $(function () {
             // ========== 全局工具函数 ==========
             /**
              * 显示Toast提示
@@ -303,7 +305,7 @@
                 $toast.text(msg)
                     .removeClass('show success error')
                     .addClass(`show ${type}`);
-                
+
                 setTimeout(() => {
                     $toast.removeClass('show');
                 }, duration);
@@ -353,7 +355,7 @@
                 try {
                     // 1. TOON解码（可替换为自定义编解码逻辑）
                     const jsonObj = window.toonDecode(toonStr);
-                    
+
                     // 2. 校验解码后的JSON合法性
                     const jsonStr = JSON.stringify(jsonObj);
                     if (!validateJSON(jsonStr)) {
@@ -370,7 +372,7 @@
             /**
              * 可视化美化功能
              */
-            $('#btn-beautify').click(function() {
+            $('#btn-beautify').click(function () {
                 // 优先处理有内容的区域，若都有则优先JSON
                 const $jsonText = $('#json-content');
                 const $toonText = $('#toon-content');
@@ -404,7 +406,7 @@
             /**
              * 压缩预览功能
              */
-            $('#btn-compress').click(function() {
+            $('#btn-compress').click(function () {
                 const $jsonText = $('#json-content');
                 const $toonText = $('#toon-content');
                 const jsonVal = $jsonText.val().trim();
@@ -437,7 +439,7 @@
             /**
              * 复制TOON内容功能
              */
-            $('#btn-copy-toon').click(async function() {
+            $('#btn-copy-toon').click(async function () {
                 const toonVal = $('#toon-content').val().trim();
                 if (!toonVal) {
                     showToast('TOON内容为空，无法复制！', 'error');
@@ -467,7 +469,7 @@
             /**
              * JSON转TOON按钮
              */
-            $('#btn-json-to-toon').click(function() {
+            $('#btn-json-to-toon').click(function () {
                 const jsonStr = $('#json-content').val().trim();
                 if (!jsonStr) {
                     showToast('请输入JSON内容！', 'error');
@@ -486,7 +488,7 @@
             /**
              * TOON转JSON按钮
              */
-            $('#btn-toon-to-json').click(function() {
+            $('#btn-toon-to-json').click(function () {
                 const toonStr = $('#toon-content').val().trim();
                 if (!toonStr) {
                     showToast('请输入TOON内容！', 'error');
@@ -505,7 +507,7 @@
             });
 
             // ========== 初始化示例内容（可选） ==========
-            $(document).ready(function() {
+            $(document).ready(function () {
                 // 初始化示例JSON内容
                 const demoJson = {
                     "title": "创造AI | TOON格式在线转换",
@@ -516,7 +518,12 @@
                         "数据类型检测",
                         {
                             "description": "支持多种编码",
-                            "status": "开发中"
+                            "status": [1, 2, 3, 4, 5, 6, 7,
+                                {
+                                    "description2": "支持多种编码2",
+                                    "description3": "支持多种编码3"
+                                }
+                            ]
                         },
                         "时间戳与日期互转",
                         "TOON 校验与美化",
@@ -556,4 +563,5 @@
         });
     </script>
 </body>
+
 </html>
