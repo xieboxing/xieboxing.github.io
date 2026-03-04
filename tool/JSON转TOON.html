@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOON格式在线转换</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <!-- 引入TOON编解码库 -->
+    <script type="module">
+        // 导出到全局，方便非模块代码调用
+        import { encode, decode } from 'https://cdn.jsdelivr.net/npm/@toon-format/toon@2.1.0/+esm';
+        window.toonEncode = encode;
+        window.toonDecode = decode;
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding-bottom: 20px;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e6e9ed;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-title .icon-share {
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: inline-block;
+            background-color: #f5f5f5;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 按钮通用样式 */
+        .btn {
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: #1e88e5;
+            color: #fff;
+            border-color: #1e88e5;
+        }
+
+        .btn-primary:hover {
+            background-color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        .btn-primary:active {
+            background-color: #1565c0;
+            border-color: #1565c0;
+        }
+
+        .btn-default {
+            background-color: #fff;
+            color: #333;
+            border-color: #ddd;
+        }
+
+        .btn-default:hover {
+            border-color: #1e88e5;
+            color: #1e88e5;
+        }
+
+        .btn-default:active {
+            background-color: #f5f5f5;
+        }
+
+        /* 主体容器 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* 内容区域通用样式 */
+        .content-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            height: 40px;
+            line-height: 40px;
+            padding: 0 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e6e9ed;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .panel-body {
+            padding: 15px;
+        }
+
+        .content-textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 10px;
+            border: 1px solid #e6e9ed;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            outline: none;
+            white-space: pre;
+            word-wrap: normal;
+            overflow-x: auto;
+        }
+
+        .content-textarea:focus {
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 2px rgba(30,136,229,0.1);
+        }
+
+        /* 转换按钮区域 */
+        .convert-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .convert-btn {
+            width: 120px;
+            height: 40px;
+        }
+
+        /* Toast提示样式 */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 16px;
+            border-radius: 4px;
+            background-color: rgba(0,0,0,0.8);
+            color: #fff;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: rgba(76,175,80,0.8);
+        }
+
+        .toast.error {
+            background-color: rgba(244,67,54,0.8);
+        }
+
+        /* 响应式适配 - 移动端（小于768px） */
+        @media (max-width: 767px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .convert-btns {
+                flex-direction: row;
+                justify-content: center;
+                margin: 10px 0;
+            }
+
+            .content-textarea {
+                min-height: 250px;
+            }
+
+            .header {
+                height: 50px;
+                padding: 0 10px;
+            }
+
+            .header-title {
+                font-size: 16px;
+            }
+
+            .btn {
+                height: 32px;
+                padding: 0 12px;
+                font-size: 13px;
+            }
+
+            .convert-btn {
+                width: 100px;
+                height: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="header">
+        <div class="header-title">
+            TOON格式在线转换
+            <span class="icon-share">分享</span>
+        </div>
+        <div class="header-btns">
+            <!-- <button class="btn btn-default" id="btn-beautify">可视化美化</button>
+            <button class="btn btn-default" id="btn-compress">压缩预览</button> -->
+            <button class="btn btn-primary" id="btn-copy-toon">复制TOON内容</button>
+        </div>
+    </div>
+
+    <!-- 主体内容区 -->
+    <div class="container">
+        <!-- JSON内容区 -->
+        <div class="content-panel">
+            <div class="panel-header">JSON内容</div>
+            <div class="panel-body">
+                <textarea class="content-textarea" id="json-content" placeholder="请输入JSON格式内容..."></textarea>
+            </div>
+        </div>
+
+        <!-- 转换按钮区 -->
+        <div class="convert-btns">
+            <button class="btn btn-primary convert-btn" id="btn-json-to-toon">JSON转TOON</button>
+            <button class="btn btn-primary convert-btn" id="btn-toon-to-json">TOON转JSON</button>
+        </div>
+
+        <!-- TOON内容区 -->
+        <div class="content-panel">
+            <div class="panel-header">TOON内容</div>
+            <div class="panel-body">
+                <textarea class="content-textarea" id="toon-content" placeholder="请输入TOON格式内容..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示容器 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        $(function() {
+            // ========== 全局工具函数 ==========
+            /**
+             * 显示Toast提示
+             * @param {string} msg 提示内容
+             * @param {string} type 类型：success/error/default
+             * @param {number} duration 显示时长(ms)
+             */
+            function showToast(msg, type = 'default', duration = 2000) {
+                const $toast = $('#toast');
+                $toast.text(msg)
+                    .removeClass('show success error')
+                    .addClass(`show ${type}`);
+                
+                setTimeout(() => {
+                    $toast.removeClass('show');
+                }, duration);
+            }
+
+            /**
+             * 校验JSON格式合法性
+             * @param {string} jsonStr JSON字符串
+             * @returns {object|null} 解析后的对象或null
+             */
+            function validateJSON(jsonStr) {
+                try {
+                    return JSON.parse(jsonStr);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // ========== 核心转换函数 ==========
+            /**
+             * JSON转TOON核心函数
+             * @param {string} jsonStr JSON字符串
+             * @returns {object} { success: boolean, data: string, error: string }
+             */
+            function jsonToToon(jsonStr) {
+                try {
+                    // 1. 校验JSON格式
+                    const jsonObj = validateJSON(jsonStr);
+                    if (!jsonObj) {
+                        return { success: false, error: 'JSON格式不合法，请检查！' };
+                    }
+
+                    // 2. TOON编码（可替换为自定义编解码逻辑）
+                    const toonStr = window.toonEncode(jsonObj);
+                    return { success: true, data: toonStr };
+                } catch (e) {
+                    return { success: false, error: `JSON转TOON失败：${e.message}` };
+                }
+            }
+
+            /**
+             * TOON转JSON核心函数
+             * @param {string} toonStr TOON字符串
+             * @returns {object} { success: boolean, data: string, error: string }
+             */
+            function toonToJson(toonStr) {
+                try {
+                    // 1. TOON解码（可替换为自定义编解码逻辑）
+                    const jsonObj = window.toonDecode(toonStr);
+                    
+                    // 2. 校验解码后的JSON合法性
+                    const jsonStr = JSON.stringify(jsonObj);
+                    if (!validateJSON(jsonStr)) {
+                        return { success: false, error: 'TOON解码后JSON格式不合法！' };
+                    }
+
+                    return { success: true, data: jsonStr };
+                } catch (e) {
+                    return { success: false, error: `TOON转JSON失败：${e.message}` };
+                }
+            }
+
+            // ========== 顶部辅助功能 ==========
+            /**
+             * 可视化美化功能
+             */
+            $('#btn-beautify').click(function() {
+                // 优先处理有内容的区域，若都有则优先JSON
+                const $jsonText = $('#json-content');
+                const $toonText = $('#toon-content');
+                const jsonVal = $jsonText.val().trim();
+                const toonVal = $toonText.val().trim();
+
+                if (jsonVal) {
+                    // 美化JSON
+                    const jsonObj = validateJSON(jsonVal);
+                    if (jsonObj) {
+                        $jsonText.val(JSON.stringify(jsonObj, null, 2));
+                        showToast('JSON内容美化成功！', 'success');
+                    } else {
+                        showToast('JSON格式不合法，无法美化！', 'error');
+                    }
+                } else if (toonVal) {
+                    // 美化TOON（基于TOON库特性简化处理）
+                    try {
+                        const jsonObj = window.toonDecode(toonVal);
+                        const beautifiedToon = window.toonEncode(jsonObj, { space: 2 });
+                        $toonText.val(beautifiedToon);
+                        showToast('TOON内容美化成功！', 'success');
+                    } catch (e) {
+                        showToast('TOON格式不合法，无法美化！', 'error');
+                    }
+                } else {
+                    showToast('请先输入JSON或TOON内容！', 'error');
+                }
+            });
+
+            /**
+             * 压缩预览功能
+             */
+            $('#btn-compress').click(function() {
+                const $jsonText = $('#json-content');
+                const $toonText = $('#toon-content');
+                const jsonVal = $jsonText.val().trim();
+                const toonVal = $toonText.val().trim();
+
+                if (jsonVal) {
+                    // 压缩JSON
+                    const jsonObj = validateJSON(jsonVal);
+                    if (jsonObj) {
+                        $jsonText.val(JSON.stringify(jsonObj));
+                        showToast('JSON内容压缩成功！', 'success');
+                    } else {
+                        showToast('JSON格式不合法，无法压缩！', 'error');
+                    }
+                } else if (toonVal) {
+                    // 压缩TOON
+                    try {
+                        const jsonObj = window.toonDecode(toonVal);
+                        const compressedToon = window.toonEncode(jsonObj);
+                        $toonText.val(compressedToon);
+                        showToast('TOON内容压缩成功！', 'success');
+                    } catch (e) {
+                        showToast('TOON格式不合法，无法压缩！', 'error');
+                    }
+                } else {
+                    showToast('请先输入JSON或TOON内容！', 'error');
+                }
+            });
+
+            /**
+             * 复制TOON内容功能
+             */
+            $('#btn-copy-toon').click(async function() {
+                const toonVal = $('#toon-content').val().trim();
+                if (!toonVal) {
+                    showToast('TOON内容为空，无法复制！', 'error');
+                    return;
+                }
+
+                try {
+                    // 复制到剪贴板
+                    await navigator.clipboard.writeText(toonVal);
+                    showToast('TOON内容复制成功！', 'success');
+                } catch (e) {
+                    // 降级处理（兼容旧浏览器）
+                    const $textarea = $('<textarea>').val(toonVal).appendTo('body');
+                    $textarea[0].select();
+                    document.execCommand('copy');
+                    $textarea.remove();
+
+                    if (document.execCommand('copy')) {
+                        showToast('TOON内容复制成功！', 'success');
+                    } else {
+                        showToast('TOON内容复制失败，请手动复制！', 'error');
+                    }
+                }
+            });
+
+            // ========== 核心转换按钮事件 ==========
+            /**
+             * JSON转TOON按钮
+             */
+            $('#btn-json-to-toon').click(function() {
+                const jsonStr = $('#json-content').val().trim();
+                if (!jsonStr) {
+                    showToast('请输入JSON内容！', 'error');
+                    return;
+                }
+
+                const result = jsonToToon(jsonStr);
+                if (result.success) {
+                    $('#toon-content').val(result.data);
+                    showToast('JSON转TOON成功！', 'success');
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+
+            /**
+             * TOON转JSON按钮
+             */
+            $('#btn-toon-to-json').click(function() {
+                const toonStr = $('#toon-content').val().trim();
+                if (!toonStr) {
+                    showToast('请输入TOON内容！', 'error');
+                    return;
+                }
+
+                const result = toonToJson(toonStr);
+                if (result.success) {
+                    // 美化输出JSON
+                    const jsonObj = JSON.parse(result.data);
+                    $('#json-content').val(JSON.stringify(jsonObj, null, 2));
+                    showToast('TOON转JSON成功！', 'success');
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+
+            // ========== 初始化示例内容（可选） ==========
+            $(document).ready(function() {
+                // 初始化示例JSON内容
+                const demoJson = {
+                    "title": "创造AI | TOON格式在线转换",
+                    "json.url": "https://chuangzaoai.com",
+                    "keywords": "smart convert, data transformation",
+                    "Function": [
+                        "格式转换",
+                        "数据类型检测",
+                        {
+                            "description": "支持多种编码",
+                            "status": "开发中"
+                        },
+                        "时间戳与日期互转",
+                        "TOON 校验与美化",
+                        "参数解析与生成"
+                    ],
+                    "About": {
+                        "QQ": 123456789,
+                        "email": "support@smartconvert.example.com"
+                    },
+                    "Special": [
+                        "&apiKey",
+                        "&secret",
+                        "&nonce",
+                        "&timestamp",
+                        "&signature",
+                        "{{placeholder}}",
+                        "<<custom>>"
+                    ],
+                    "numbers": [
+                        1122334455667788,
+                        2233445566778899,
+                        3344556677889900,
+                        4455667788990011,
+                        5566778899001122,
+                        6677889900112233,
+                        7788990011223344,
+                        8899001122334455,
+                        9900112233445566,
+                        1011121314151617
+                    ],
+                    "id2": 1234567890123456,
+                    "BigNumber": 98765432109876540000,
+                    "content": "豫章故郡，洪都新府。星分翼轸，地接衡庐。襟三江而带五湖，控蛮荆而引瓯越。物华天宝，龙光射牛斗之墟；人杰地灵，徐孺下陈蕃之榻。雄州雾列，俊采星驰。台隍枕夷夏之交，宾主尽东南之美。都督阎公之雅望，棨戟遥临；宇文新州之懿范，襜帷暂驻。十旬休假，胜友如云；千里逢迎，高朋满座。腾蛟起凤，孟学士之词宗；紫电青霜，王将军之武库。家君作宰，路出名区；童子何知，躬逢胜饯。"
+                };
+                $('#json-content').val(JSON.stringify(demoJson, null, 2));
+            });
+        });
+    </script>
+</body>
+</html>
