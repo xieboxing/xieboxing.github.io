@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维导图在线转换意图树</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        /* 顶部区域 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            background-color: #1677ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #4096ff;
+        }
+
+        .btn:active {
+            background-color: #0958d9;
+            transform: translateY(1px);
+        }
+
+        /* 主体内容区 */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 100px);
+            min-height: 450px;
+        }
+
+        /* 模块容器 */
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 中间操作区 */
+        .action-panel {
+            flex: 0 0 auto;
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .action-panel .btn {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+        }
+
+        /* 模块标题栏 */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .panel-header h2 {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 文本框 */
+        textarea {
+            flex: 1;
+            width: 100%;
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 400px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            border-color: #1677ff;
+            box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+        }
+
+        /* 响应式布局 - 移动端 */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .main-container {
+                flex-direction: column;
+                height: auto;
+                min-height: auto;
+            }
+
+            .panel {
+                min-height: 350px;
+            }
+
+            textarea {
+                min-height: 280px;
+            }
+
+            .action-panel {
+                width: 100%;
+                flex-direction: row;
+                padding: 10px 0;
+            }
+
+            .action-panel .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部区域 -->
+    <div class="header">
+        <h1>思维导图在线转换意图树</h1>
+        <button class="btn" id="clearBtn">清空</button>
+    </div>
+
+    <!-- 主体内容区 -->
+    <div class="main-container">
+        <!-- 左侧：思维导图 -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>思维导图（图元）</h2>
+                <button class="btn" id="copyMindBtn">复制 思维导图</button>
+            </div>
+            <textarea id="mindInput" placeholder="请输入思维导图文本，使用制表符或4个空格缩进..."></textarea>
+        </div>
+
+        <!-- 中间：操作按钮 -->
+        <div class="action-panel">
+            <button class="btn" id="toIntentBtn">思维导图 转 意图树</button>
+            <button class="btn" id="toMindBtn">意图树 转 思维导图</button>
+        </div>
+
+        <!-- 右侧：意图树 -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>意图树（Intent Tree）</h2>
+                <button class="btn" id="copyIntentBtn">复制 意图树</button>
+            </div>
+            <textarea id="intentInput" placeholder="请输入意图树文本..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 自动聚焦左侧输入框
+            $('#mindInput').focus();
+
+            /**
+             * 解析思维导图文本，生成节点列表
+             */
+            function parseMindText(text) {
+                const lines = text.split('\n');
+                const nodes = [];
+                
+                for (let line of lines) {
+                    // 跳过纯空白行
+                    if (!line.trim()) continue;
+                    
+                    let level = 0;
+                    let content = line;
+                    
+                    // 优先匹配制表符缩进
+                    while (content.startsWith('\t')) {
+                        level++;
+                        content = content.substring(1);
+                    }
+                    
+                    // 无制表符则匹配4个空格缩进
+                    if (level === 0) {
+                        while (content.startsWith('    ')) {
+                            level++;
+                            content = content.substring(4);
+                        }
+                    }
+                    
+                    nodes.push({
+                        level: level,
+                        content: content.trim(),
+                        children: [],
+                        parent: null,
+                        isLast: false // 是否是父节点的最后一个子节点
+                    });
+                }
+                
+                return nodes;
+            }
+
+            /**
+             * 构建树形结构，建立父子关系，标记isLast
+             */
+            function buildTree(nodes) {
+                const rootNodes = [];
+                const stack = []; // 用于追踪各级父节点
+                
+                for (let node of nodes) {
+                    // 弹出栈中level大于等于当前节点的，找到父节点
+                    while (stack.length > 0 && stack[stack.length - 1].level >= node.level) {
+                        stack.pop();
+                    }
+                    
+                    if (stack.length === 0) {
+                        // 根节点
+                        rootNodes.push(node);
+                    } else {
+                        // 找到父节点，建立关系
+                        const parent = stack[stack.length - 1];
+                        node.parent = parent;
+                        parent.children.push(node);
+                    }
+                    
+                    // 当前节点入栈，作为后续节点的候选父节点
+                    stack.push(node);
+                }
+                
+                // 标记每个父节点的最后一个子节点
+                function markLastChild(nodes) {
+                    for (let node of nodes) {
+                        if (node.children.length > 0) {
+                            // 最后一个子节点标记isLast=true
+                            node.children[node.children.length - 1].isLast = true;
+                            // 递归处理子节点
+                            markLastChild(node.children);
+                        }
+                    }
+                }
+                
+                markLastChild(rootNodes);
+                return rootNodes;
+            }
+
+            /**
+             * 深度遍历树形结构，生成意图树文本
+             */
+            function generateIntentTree(rootNodes) {
+                const lines = [];
+                
+                // 递归遍历节点
+                function traverse(node, ancestorStates) {
+                    // 生成当前节点的前缀
+                    let prefix = '';
+                    // 祖先节点的状态：true表示该祖先不是其父节点的最后一个子节点，需要显示竖线
+                    for (let state of ancestorStates) {
+                        prefix += state ? '│   ' : '    ';
+                    }
+                    
+                    // 根节点无符号前缀
+                    if (node.parent !== null) {
+                        prefix += node.isLast ? '└─ ' : '├─ ';
+                    }
+                    
+                    // 添加当前行
+                    lines.push(prefix + node.content);
+                    
+                    // 递归处理子节点
+                    for (let i = 0; i < node.children.length; i++) {
+                        const child = node.children[i];
+                        // 传递新的祖先状态：当前节点是否需要给后代显示竖线
+                        const newAncestorStates = [...ancestorStates];
+                        // 根节点没有父节点，不需要传递状态
+                        if (node.parent !== null) {
+                            // 当前节点不是最后一个子节点，后代需要显示竖线
+                            newAncestorStates.push(!node.isLast);
+                        }
+                        traverse(child, newAncestorStates);
+                    }
+                }
+                
+                // 遍历所有根节点
+                for (let root of rootNodes) {
+                    traverse(root, []);
+                }
+                
+                return lines.join('\n');
+            }
+
+            /**
+             * 思维导图转意图树（核心入口）
+             */
+            function mindToIntent(text) {
+                if (!text.trim()) return '';
+                const nodes = parseMindText(text);
+                const rootNodes = buildTree(nodes);
+                return generateIntentTree(rootNodes);
+            }
+
+            /**
+             * 意图树转思维导图
+             */
+            function intentToMind(text) {
+                const lines = text.split('\n');
+                const result = [];
+                
+                for (let line of lines) {
+                    // 跳过纯空白行
+                    if (!line.trim()) continue;
+                    
+                    let level = 0;
+                    let content = line;
+                    
+                    // 移除树形符号，计算层级
+                    while (true) {
+                        if (content.startsWith('├─ ') || content.startsWith('└─ ')) {
+                            level++;
+                            content = content.substring(3);
+                        } else if (content.startsWith('│   ')) {
+                            level++;
+                            content = content.substring(4);
+                        } else if (content.startsWith('    ')) {
+                            level++;
+                            content = content.substring(4);
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    // 生成4个空格的标准缩进
+                    const indent = '    '.repeat(level);
+                    result.push(indent + content.trim());
+                }
+                
+                return result.join('\n');
+            }
+
+            /**
+             * 复制文本到剪贴板
+             */
+            function copyToClipboard(text, btnElement, originalText) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showCopySuccess(btnElement, originalText);
+                    }).catch(function() {
+                        fallbackCopy(text, btnElement, originalText);
+                    });
+                } else {
+                    fallbackCopy(text, btnElement, originalText);
+                }
+            }
+
+            /**
+             * 降级复制方案
+             */
+            function fallbackCopy(text, btnElement, originalText) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showCopySuccess(btnElement, originalText);
+                } catch (e) {
+                    console.error('复制失败:', e);
+                }
+                document.body.removeChild(textarea);
+            }
+
+            /**
+             * 显示复制成功提示
+             */
+            function showCopySuccess(btnElement, originalText) {
+                $(btnElement).text('复制成功');
+                setTimeout(function() {
+                    $(btnElement).text(originalText);
+                }, 2000);
+            }
+
+            // 思维导图转意图树按钮
+            $('#toIntentBtn').click(function() {
+                const input = $('#mindInput').val();
+                try {
+                    const output = mindToIntent(input);
+                    $('#intentInput').val(output);
+                } catch (e) {
+                    console.error('转换错误:', e);
+                }
+            });
+
+            // 意图树转思维导图按钮
+            $('#toMindBtn').click(function() {
+                const input = $('#intentInput').val();
+                try {
+                    const output = intentToMind(input);
+                    $('#mindInput').val(output);
+                } catch (e) {
+                    console.error('转换错误:', e);
+                }
+            });
+
+            // 清空按钮
+            $('#clearBtn').click(function() {
+                $('#mindInput').val('');
+                $('#intentInput').val('');
+                $('#mindInput').focus();
+            });
+
+            // 复制思维导图按钮
+            $('#copyMindBtn').click(function() {
+                const text = $('#mindInput').val();
+                copyToClipboard(text, this, '复制 思维导图');
+            });
+
+            // 复制意图树按钮
+            $('#copyIntentBtn').click(function() {
+                const text = $('#intentInput').val();
+                copyToClipboard(text, this, '复制 意图树');
+            });
+        });
+    </script>
+</body>
+</html>
