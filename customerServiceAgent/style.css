@@ -151,12 +151,16 @@ body {
     word-wrap: break-word;
     word-break: break-all;
     overflow-wrap: break-word;
+    /* 保留文本中的换行符（如\n），同时允许自动换行，避免长文本溢出 */
+    white-space: pre-wrap;
 }
 
 .bot-bubble {
     background: linear-gradient(135deg, #1e3a5f, #2a4a7f);
     color: #e0f0ff;
     border-top-left-radius: 4px;
+    /* 修复初始化消息文本左侧多余空白，取消异常文本缩进 */
+    text-indent: 0;
     order: 1;
 }
 
@@ -167,22 +171,85 @@ body {
     order: 1;
 }
 
-/* 加载状态区 - 固定高度，不被挤压 */
+/* 加载状态区 - 固定高度，不被挤压（模板样式，隐藏） */
 .loading-container {
     text-align: center;
     margin-bottom: 15px;
     flex-shrink: 0;
     height: 30px;
+    display: none;
+}
+
+/* 动态插入的加载状态容器 - 定位在用户消息下方，与AI消息对齐 */
+.loading-container.dynamic-loading {
+    display: block;
+    text-align: left;
+    margin-bottom: 20px;
+    margin-top: 0;
+    height: auto;
+    padding-left: 60px; /* 与机器人头像右侧对齐：头像宽度40px + 左右margin各10px = 60px */
+}
+
+/* 加载内容容器：横向排列圆点和文本 */
+.loading-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 加载圆点容器 */
+.loading-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 单个加载圆点 */
+.loading-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4a9eff;
+    opacity: 0.7;
+    animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+/* 圆点动画延迟 */
+.loading-dot.dot-1 {
+    animation-delay: 0s;
+}
+.loading-dot.dot-2 {
+    animation-delay: 0.2s;
+}
+.loading-dot.dot-3 {
+    animation-delay: 0.4s;
+}
+
+/* 圆点脉冲动画 */
+@keyframes pulseDot {
+    0%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+        box-shadow: 0 0 8px rgba(74, 158, 255, 0.3);
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+        box-shadow: 0 0 16px rgba(74, 158, 255, 0.7);
+    }
 }
 
 .loading-text {
     color: #4a9eff;
     font-size: 1rem;
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+    /* 保留原有的淡入淡出动画，增强视觉效果 */
     animation: fadeInOut 1s ease-in-out infinite;
 }
 
 @keyframes fadeInOut {
-    0%, 100% { opacity: 0.5; }
+    0%, 100% { opacity: 0.7; }
     50% { opacity: 1; }
 }
 
@@ -456,5 +523,17 @@ body {
     .logs-container {
         font-size: 0.8rem;
         min-height: 300px;
+    }
+
+    /* 移动端加载状态调整 */
+    .loading-container.dynamic-loading {
+        padding-left: 50px; /* 移动端头像可能较小，适当调整 */
+    }
+    .loading-dot {
+        width: 8px;
+        height: 8px;
+    }
+    .loading-text {
+        font-size: 0.9rem;
     }
 }

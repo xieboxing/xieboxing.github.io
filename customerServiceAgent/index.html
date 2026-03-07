@@ -28,14 +28,19 @@
                     <div class="avatar bot-avatar">
                         <i class="fas fa-robot"></i>
                     </div>
-                    <div class="message-bubble bot-bubble">
-                        您好，有什么可以帮您？
-                    </div>
+                    <div class="message-bubble bot-bubble">您好，有什么可以帮您？</div>
                 </div>
             </div>
-            <!-- 加载状态区 -->
+            <!-- 加载状态区（模板，用于克隆） -->
             <div class="loading-container" id="loadingContainer" style="display: none;">
-                <div class="loading-text" id="loadingText">创造 AI 客服正在思考中...</div>
+                <div class="loading-content">
+                    <div class="loading-dots">
+                        <div class="loading-dot dot-1"></div>
+                        <div class="loading-dot dot-2"></div>
+                        <div class="loading-dot dot-3"></div>
+                    </div>
+                    <div class="loading-text" id="loadingText">创造 AI 客服正在思考中...</div>
+                </div>
             </div>
             <!-- 底部输入区 -->
             <div class="input-container">
@@ -48,7 +53,7 @@
         <section class="config-section">
             <!-- Token 输入框 -->
             <div class="config-item token-box">
-                <h3 class="config-title">token 输入框</h3>
+                <h3 class="config-title">Agent token 输入框</h3>
                 <input type="text" class="token-input" id="tokenInput" placeholder="请输入 Coze API token">
             </div>
             <!-- 前端操作日志 -->

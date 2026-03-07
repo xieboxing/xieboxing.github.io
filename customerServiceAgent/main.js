@@ -5,6 +5,7 @@ let isLoading = false;
 let loadingTextInterval = null;
 let currentBotMessageElement = null; // 当前正在更新的机器人消息元素
 let accumulatedResponse = ''; // 流式响应累计内容
+let currentLoadingElement = null; // 当前动态加载状态元素
 const API_URL = 'https://api.coze.cn/v1/workflow/stream_run'; // 固定接口地址
 const WORKFLOW_ID = '7613706615358914575'; // 固定工作流ID
 
@@ -54,7 +55,7 @@ $(document).ready(function() {
     });
 
     // 初始化日志
-    log('应用已启动，若 token 使用次数超过上限，请联系大星获取新的 token');
+    log('Agent已启动，若 token 使用次数超过上限，请联系大星获取新的 token');
 });
 
 /**
@@ -126,18 +127,40 @@ function addBotMessage(content, isStreaming = false) {
  * 显示加载状态
  */
 function showLoading() {
-    const loadingContainer = $('#loadingContainer');
-    const loadingText = $('#loadingText');
-    loadingContainer.show();
-    
+    // 获取最新的用户消息元素
+    const lastUserMessage = $('#messagesContainer .user-message:last');
+    if (lastUserMessage.length === 0) {
+        // 没有用户消息，不显示加载状态
+        console.warn('没有用户消息，不显示加载状态');
+        return;
+    }
+
+    // 移除之前可能存在的动态加载状态
+    if (currentLoadingElement) {
+        currentLoadingElement.remove();
+        currentLoadingElement = null;
+    }
+
+    // 克隆模板加载容器
+    const loadingTemplate = $('#loadingContainer');
+    const loadingClone = loadingTemplate.clone();
+    loadingClone.removeAttr('id').addClass('dynamic-loading').show();
+
+    // 插入到最新用户消息之后
+    lastUserMessage.after(loadingClone);
+    currentLoadingElement = loadingClone;
+
+    // 获取克隆容器中的文本元素
+    const loadingText = loadingClone.find('.loading-text');
+
     let textIndex = 0;
     const texts = ['创造 AI 客服正在思考中...', '创造 AI 客服问题分析中...'];
-    
+
     // 清除之前的定时器
     if (loadingTextInterval) {
         clearInterval(loadingTextInterval);
     }
-    
+
     loadingText.text(texts[textIndex]);
     loadingTextInterval = setInterval(function() {
         textIndex = (textIndex + 1) % texts.length;
@@ -145,17 +168,30 @@ function showLoading() {
             $(this).text(texts[textIndex]).fadeIn(300);
         });
     }, 1000);
+
+    // 滚动到底部，确保加载状态可见
+    scrollChatToBottom();
 }
 
 /**
  * 隐藏加载状态
  */
 function hideLoading() {
+    // 隐藏模板容器（虽然本来就隐藏）
     $('#loadingContainer').hide();
+
+    // 移除动态加载状态元素
+    if (currentLoadingElement) {
+        currentLoadingElement.remove();
+        currentLoadingElement = null;
+    }
+
+    // 清除文本切换定时器
     if (loadingTextInterval) {
         clearInterval(loadingTextInterval);
         loadingTextInterval = null;
     }
+
     currentBotMessageElement = null;
     accumulatedResponse = '';
 }
@@ -193,8 +229,8 @@ async function sendMessage() {
 
     // 前置校验
     if (!token) {
-        log('请先填写 Coze API token');
-        alert('请先填写 Coze API token');
+        log('请先填写 Agent token');
+        alert('请先填写 Agent token');
         return;
     }
     if (!userInput) {
@@ -233,7 +269,7 @@ async function sendMessage() {
             }
         };
 
-        log(`开始调用 Coze 工作流接口: ${API_URL}`);
+        log(`开始调用Agent接口: ${API_URL}`);
         log(`请求Body: ${JSON.stringify(requestBody)}`);
 
         // 发起fetch POST请求，开启流式响应
@@ -250,7 +286,7 @@ async function sendMessage() {
         // 接口返回非200状态码处理
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`接口请求失败，状态码: ${response.status}, 错误信息: ${errorText}`);
+            throw new Error(`业务繁忙，请稍后再试-7，状态码: ${response.status}, 错误信息: ${errorText}`);
         }
 
         // 检查是否为流式响应
@@ -309,7 +345,15 @@ async function sendMessage() {
             }
         }
         console.log('最终累计回复JSON:', JSON.parse(accumulatedResponse));
+
+        try {
         result = JSON.parse(accumulatedResponse);
+        }catch(e){
+            log(`最终回复JSON解析失败: ${e.message}, 原始内容: ${accumulatedResponse}`);
+            addBotMessage('访问人数过多，业务繁忙，请稍后再试-1', false);
+            return;
+        }
+        
         let showResult = ''; // 重置累计回复变量，用于最终展示
         if(result?.state != 1){
             showResult = result?.message || '接口返回错误状态';
@@ -320,9 +364,9 @@ async function sendMessage() {
                     showResult += `${JSON.stringify(result?.resultArr[0].return_text?.action)}\n`;
                 }
             }else{  
-                showResult += `我整理了一下，您刚刚一共问了${result?.resultArr?.length || "n"} 个问题\n`;
+                showResult += `我整理了一下您的${result?.resultArr?.length || "n"} 个问题\n`;
                 for(let i=0;i<result?.resultArr?.length;i++){
-                    showResult += `${i + 1}. ${result?.resultArr[i].QR}\n`;
+                    showResult += `\n${i + 1}. ${result?.resultArr[i].QR}\n`;
                     showResult += `${result?.resultArr[i].return_text}\n`;
                     if(result?.resultArr[i].return_text?.action&&Object.keys(result?.resultArr[i].return_text).length==1){
                         showResult += `${JSON.stringify(result?.resultArr[i].return_text?.action)}\n`;
@@ -330,25 +374,25 @@ async function sendMessage() {
                 }
                 
             }
-            showResult = showResult || '接口返回成功但无内容';
+            showResult = showResult || '业务繁忙，请稍后再试-2';
         }
         addBotMessage(showResult, true);
 
 
-        log(`工作流调用完成，最终回复: ${showResult || '无返回内容'}`);
+        log(`Agent调用完成，最终回复: ${showResult || '无返回内容'}`);
         // 无内容时给用户提示
         if (!showResult) {
-            addBotMessage('已完成请求，接口未返回可展示内容', false);
+            addBotMessage('业务繁忙，请稍后再试-3', false);
         }
 
     } catch (error) {
         // 全场景错误处理
         console.error('接口调用报错:', error);
         const errorMsg = error.name === 'TimeoutError' 
-            ? '请求超时，请检查网络后重试' 
-            : error.message || '未知错误';
+            ? '业务繁忙，请稍后再试-4' 
+            : error.message || '业务繁忙，请稍后再试-5';
         log(`请求失败: ${errorMsg}`);
-        addBotMessage('请求失败，请检查 token 是否正确或网络状态', false);
+        addBotMessage('业务繁忙，请稍后再试-6', false);
     } finally {
         // 最终恢复状态，无论成功失败都执行
         hideLoading();
