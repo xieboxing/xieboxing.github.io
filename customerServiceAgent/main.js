@@ -9,6 +9,135 @@ let currentLoadingElement = null; // 当前动态加载状态元素
 const API_URL = 'https://api.coze.cn/v1/workflow/stream_run'; // 固定接口地址
 const WORKFLOW_ID = '7613706615358914575'; // 固定工作流ID
 
+/* ===================== Action类型交互功能 ===================== */
+/**
+ * 从结果项中提取action字段
+ * @param {object} resultItem - resultArr中的单项
+ * @returns {object|null} action对象，不存在则返回null
+ */
+function extractAction(resultItem) {
+    if (!resultItem || typeof resultItem !== 'object') return null;
+
+    // 优先从resultItem.action获取
+    if (resultItem.action && typeof resultItem.action === 'object') {
+        return resultItem.action;
+    }
+    // 其次从return_text.action获取
+    if (resultItem.return_text && typeof resultItem.return_text === 'object' && resultItem.return_text.action) {
+        return resultItem.return_text.action;
+    }
+    // 最后尝试直接使用resultItem.action（字符串类型）
+    if (resultItem.action) {
+        return typeof resultItem.action === 'string' ? { action: resultItem.action, content: resultItem.content || '', path: resultItem.path || '' } : resultItem.action;
+    }
+    return null;
+}
+
+/**
+ * 从结果项中提取文本内容
+ * @param {object} resultItem - resultArr中的单项
+ * @returns {string} 文本内容
+ */
+function extractTextContent(resultItem) {
+    if (!resultItem || typeof resultItem !== 'object') return '';
+
+    // 优先从return_text字段获取
+    if (typeof resultItem.return_text === 'string') {
+        return resultItem.return_text;
+    }
+    // return_text可能是对象，尝试提取其文本内容
+    if (typeof resultItem.return_text === 'object' && resultItem.return_text) {
+        // 如果return_text是对象且有text属性
+        if (resultItem.return_text.text) {
+            return resultItem.return_text.text;
+        }
+        // 否则尝试转换为字符串
+        return JSON.stringify(resultItem.return_text);
+    }
+    // 最后尝试其他可能的字段
+    return resultItem.text || resultItem.content || resultItem.message || resultItem.answer || '';
+}
+
+/**
+ * 渲染action操作方块
+ * @param {object} action - action对象
+ * @param {jQuery} messageElement - .bot-message元素
+ */
+function renderActionBlock(action, messageElement) {
+    if (!action || typeof action !== 'object') return;
+
+    const actionType = action.action;
+    const content = action.content || '';
+    const path = action.path || '';
+
+    // 检查actionType是否有效
+    if (!actionType || typeof actionType !== 'string') {
+        return;
+    }
+
+    // 创建操作方块容器
+    const actionBlock = $('<div class="action-block"></div>');
+    /* 【强制修复渲染顺序】设置action方块order为2，确保在文本（order:1）下方显示 */
+    actionBlock.css('order', '2');
+
+    // 根据类型渲染不同内容
+    switch(actionType) {
+        case 'query':
+            // query类型：展示自动查询状态
+            const queryContent = content || '数据';
+            actionBlock.html(`<div class="action-query">前端查询【${queryContent}】自动进行中...</div>`);
+            log(`前端API查询【${queryContent}】自动进行中...`);
+            break;
+        case 'confirm':
+            // confirm类型：并排两个按钮
+            const confirmContent = content || '确认操作';
+            actionBlock.html(`
+                <button class="action-btn action-btn-primary confirm-main">${confirmContent}</button>
+                <button class="action-btn action-btn-secondary confirm-cancel">取消</button>
+            `);
+            // 绑定点击事件
+            actionBlock.find('.confirm-main').on('click', function() {
+                const btn = $(this);
+                btn.prop('disabled', true).text('已操作');
+                log(`【${confirmContent}】`);
+            });
+            actionBlock.find('.confirm-cancel').on('click', function() {
+                actionBlock.remove();
+            });
+            break;
+        case 'human':
+            // human类型：通栏主按钮
+            const humanContent = content || '联系人工客服';
+            actionBlock.html(`<button class="action-btn action-btn-primary action-btn-full human-btn">${humanContent}</button>`);
+            actionBlock.find('.human-btn').on('click', function() {
+                const btn = $(this);
+                btn.prop('disabled', true).text('联系中');
+                log('【人工客服联系中】');
+            });
+            break;
+        case 'html':
+            // html类型：通栏主按钮，新窗口打开链接
+            // 检查path是否为空，为空则不渲染
+            if (!path || path.trim() === '') {
+                return;
+            }
+            // 检查path是否包含协议，若无则添加https
+            let href = path;
+            if (href && !href.match(/^https?:\/\//)) {
+                href = 'https://' + href;
+            }
+            const htmlContent = content || '查看详情';
+            actionBlock.html(`<a class="action-btn action-btn-primary action-btn-full html-link" href="${href}" target="_blank" rel="noopener noreferrer">${htmlContent}</a>`);
+            break;
+        default:
+            // 未知类型不渲染
+            return;
+    }
+
+    // 将操作方块添加到气泡容器中（放在文本正下方）
+    messageElement.append(actionBlock);
+}
+
 // 页面初始化
 $(document).ready(function() {
     // Token 输入框自动填充：页面加载时从localStorage读取缓存的token
@@ -54,8 +183,111 @@ $(document).ready(function() {
         }
     });
 
+    /* ===================== 输入框字符长度限制与实时计数功能 ===================== */
+    // 字符上限：100字符，统一按JS字符串length计数
+    const MAX_CHARS = 100;
+    const $chatInput = $('#chatInput');
+    const $charCountDisplay = $('#charCountDisplay');
+
+    /**
+     * 更新字符计数显示：实时显示「当前字符数/100」，无内容时自动隐藏
+     */
+    function updateCharCount() {
+        const text = $chatInput.val();
+        const length = text.length;
+        // 更新计数显示文本
+        $charCountDisplay.text(`${length}/${MAX_CHARS}`);
+        // 根据字符数显示/隐藏计数展示
+        if (length > 0) {
+            $charCountDisplay.show();
+        } else {
+            $charCountDisplay.hide();
+        }
+    }
+
+    /**
+     * 输入框内容长度校验：确保内容不超过100字符，超长时自动截断
+     */
+    function validateInputLength() {
+        const text = $chatInput.val();
+        const length = text.length;
+        if (length > MAX_CHARS) {
+            // 自动截断至前100个字符（保留原有光标位置？但截断后光标会移至末尾，符合预期）
+            const truncated = text.substring(0, MAX_CHARS);
+            $chatInput.val(truncated);
+            // 截断后重新更新计数
+            updateCharCount();
+            // 可选：给用户一个视觉提示（如轻微抖动），但为最小化改动，暂不添加
+        }
+    }
+
+    /**
+     * 输入事件监听：实时更新计数，并进行长度校验
+     */
+    $chatInput.on('input', function() {
+        // 先进行长度校验，确保内容不会超过上限（处理直接输入、删除、剪切等）
+        validateInputLength();
+        // 更新计数显示
+        updateCharCount();
+    });
+
+    /**
+     * 粘贴事件监听：在粘贴内容插入前进行截断处理，避免超长内容一次性填入
+     */
+    $chatInput.on('paste', function(e) {
+        // 获取剪贴板文本
+        const clipboardData = e.originalEvent.clipboardData || window['clipboardData'];
+        if (!clipboardData) return; // 无法获取剪贴板则放行，由input事件处理
+        const pastedText = clipboardData.getData('text');
+        if (!pastedText) return;
+        // 如果粘贴文本超过长度限制，则截断并阻止默认粘贴行为，手动插入截断后的文本
+        if (pastedText.length > MAX_CHARS) {
+            e.preventDefault();
+            const truncated = pastedText.substring(0, MAX_CHARS);
+            // 获取当前光标位置
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const currentValue = $chatInput.val();
+            // 插入截断后的文本（替换选区）
+            const newValue = currentValue.substring(0, start) + truncated + currentValue.substring(end);
+            $chatInput.val(newValue);
+            // 移动光标到插入位置之后
+            const newCursorPos = start + truncated.length;
+            this.setSelectionRange(newCursorPos, newCursorPos);
+            // 触发input事件以更新计数
+            $chatInput.trigger('input');
+        }
+        // 如果粘贴文本未超长，则交由浏览器默认粘贴处理，input事件会随后触发
+    });
+
+    /**
+     * 按键事件监听：在达到上限时，禁止输入新字符（但允许删除、退格、剪切等操作）
+     */
+    $chatInput.on('keydown', function(e) {
+        const text = $chatInput.val();
+        const length = text.length;
+        // 以下按键允许即使达到上限也能执行：删除、退格、剪切、全选、光标移动等
+        const allowedKeys = [
+            'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+            'Home', 'End', 'Tab', 'Escape', 'Meta', 'Control', 'Alt', 'Shift'
+        ];
+        // 组合键：Ctrl+A, Ctrl+C, Ctrl+V（已由paste事件处理）, Ctrl+X等允许
+        if (e.ctrlKey || e.metaKey) return; // 允许所有Ctrl/Cmd组合键
+        if (allowedKeys.includes(e.key)) return;
+        // 当内容已达上限，且按下的不是允许的按键，则阻止输入
+        if (length >= MAX_CHARS && !e.key.match(/^F[1-9]|F1[0-2]$/)) { // 功能键除外
+            e.preventDefault();
+            // 可选：给出提示音或视觉反馈，但为最小化改动，暂不添加
+        }
+    });
+
+    // 初始化：更新一次计数（初始隐藏）
+    updateCharCount();
+
+    /* ===================== 字符限制与计数功能结束 ===================== */
+
     // 初始化日志
-    log('Agent已启动，若 token 使用次数超过上限，请联系大星获取新的 token');
+    log('Agent已启动，若token已失效，请联系大星获取新的token');
 });
 
 /**
@@ -103,19 +335,30 @@ function addUserMessage(content) {
 }
 
 /**
- * 添加或更新机器人消息到聊天框（支持打字机效果）
+ * 添加或更新机器人消息到聊天框（支持打字机效果和Action操作方块）
  * @param {string} content - 消息内容
  * @param {boolean} isStreaming - 是否为流式更新
+ * @param {object|null} action - action对象，用于渲染操作方块
  */
-function addBotMessage(content, isStreaming = false) {
+function addBotMessage(content, isStreaming = false, action = null) {
     if (!isStreaming || !currentBotMessageElement) {
         // 新建消息
         const messageDiv = $('<div class="message bot-message"></div>');
         const avatar = $('<div class="avatar bot-avatar"><i class="fas fa-robot"></i></div>');
         const bubble = $('<div class="message-bubble bot-bubble"></div>').text(content);
-        messageDiv.append(avatar).append(bubble);
+        // 创建气泡容器：垂直排列文本和action方块
+        const bubbleContainer = $('<div class="message-bubble-container"></div>');
+        /* 【强制修复渲染顺序】先插入return_text文本节点，确保文本在上 */
+        bubbleContainer.append(bubble);
+        messageDiv.append(avatar).append(bubbleContainer);
         $('#messagesContainer').append(messageDiv);
         currentBotMessageElement = bubble;
+
+        // 渲染action操作方块（仅在新建消息时渲染，流式更新不重复渲染）
+        if (action) {
+            /* 【强制修复渲染顺序】文本节点插入完成后，再在下方插入action操作方块节点 */
+            renderActionBlock(action, bubbleContainer); // 将action方块添加到气泡容器内
+        }
     } else {
         // 流式更新现有消息
         currentBotMessageElement.text(content);
@@ -251,8 +494,8 @@ async function sendMessage() {
     addUserMessage(userInput);
     log(`用户发送消息: ${userInput}`);
 
-    // 清空输入框
-    chatInput.val('');
+    // 清空输入框，并触发input事件以更新字符计数显示
+    chatInput.val('').trigger('input');
 
     // 显示加载状态
     showLoading();
@@ -269,8 +512,8 @@ async function sendMessage() {
             }
         };
 
-        log(`开始调用Agent接口: ${API_URL}`);
-        log(`请求Body: ${JSON.stringify(requestBody)}`);
+        // log(`开始调用Agent接口: ${API_URL}`);
+        // log(`请求Body: ${JSON.stringify(requestBody)}`);
 
         // 发起fetch POST请求，开启流式响应
         const response = await fetch(API_URL, {
@@ -280,7 +523,7 @@ async function sendMessage() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(requestBody),
-            signal: AbortSignal.timeout(60000) // 60秒超时
+            signal: AbortSignal.timeout(120000) // 120秒超时
         });
 
         // 接口返回非200状态码处理
@@ -305,7 +548,7 @@ async function sendMessage() {
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
-                log('流式数据接收完成');
+                // log('流式数据接收完成');
                 break;
             }
 
@@ -324,7 +567,7 @@ async function sendMessage() {
 
                 // 打印完整返回数据到控制台和日志
                 console.log('接口返回完整chunk:', parsedData);
-                log(`接口返回数据: ${JSON.stringify(parsedData)}`);
+                // log(`接口返回数据: ${JSON.stringify(parsedData)}`);
 
                 // 提取内容（适配Coze接口常见返回字段，可根据实际返回结构调整）
                 let content = '';
@@ -354,34 +597,46 @@ async function sendMessage() {
             return;
         }
         
-        let showResult = ''; // 重置累计回复变量，用于最终展示
-        if(result?.state != 1){
-            showResult = result?.message || '接口返回错误状态';
-        }else{
-            if(result.resultArr.length==1){
-                showResult += result?.resultArr[0].return_text;
-                if(result?.resultArr[0].return_text?.action&&Object.keys(result?.resultArr[0].return_text).length==1){
-                    showResult += `${JSON.stringify(result?.resultArr[0].return_text?.action)}\n`;
+        // 根据接口返回状态处理消息渲染
+        if (result?.state != 1) {
+            // 状态非1：显示错误消息
+            const errorMessage = result?.message || '接口返回错误状态';
+            addBotMessage(errorMessage, false);
+            log(`Agent调用完成，错误状态: ${errorMessage}`);
+        } else {
+            // 状态为1：正常处理resultArr
+            const resultArr = result.resultArr || [];
+            let replySummary = ''; // 用于日志记录的回复摘要
+
+            if (resultArr.length === 1) {
+                // 单个问题：直接渲染一条消息
+                const item = resultArr[0];
+                const content = extractTextContent(item); // 提取文本内容
+                const action = extractAction(item); // 提取action字段
+                addBotMessage(content, false, action);
+                replySummary = content.substring(0, 100) + (content.length > 100 ? '...' : '');
+            } else {
+                // 多个问题：先渲染说明消息，再逐条渲染
+                const count = resultArr.length;
+                addBotMessage(`整理了一下您的${count}个问题`, false);
+                replySummary = `整理了${count}个问题`;
+
+                for (let i = 0; i < resultArr.length; i++) {
+                    const item = resultArr[i];
+                    const qr = item.QR || `问题 ${i + 1}`;
+                    const content = extractTextContent(item);
+                    const action = extractAction(item);
+                    // 组合QR和内容作为一条消息
+                    const messageContent = `${i + 1}. ${qr}\n${content}`;
+                    addBotMessage(messageContent, false, action);
                 }
-            }else{  
-                showResult += `我整理了一下您的${result?.resultArr?.length || "n"} 个问题\n`;
-                for(let i=0;i<result?.resultArr?.length;i++){
-                    showResult += `\n${i + 1}. ${result?.resultArr[i].QR}\n`;
-                    showResult += `${result?.resultArr[i].return_text}\n`;
-                    if(result?.resultArr[i].return_text?.action&&Object.keys(result?.resultArr[i].return_text).length==1){
-                        showResult += `${JSON.stringify(result?.resultArr[i].return_text?.action)}\n`;
-                    }
-                }
-                
             }
-            showResult = showResult || '业务繁忙，请稍后再试-2';
+
+            // 记录日志
+            log(`Agent调用完成，${replySummary}`);
         }
-        addBotMessage(showResult, true);
-
-
-        log(`Agent调用完成，最终回复: ${showResult || '无返回内容'}`);
-        // 无内容时给用户提示
-        if (!showResult) {
+        // 无内容时给用户提示（保留原有逻辑，但正常情况下不会触发）
+        if (!result || !result.resultArr || result.resultArr.length === 0) {
             addBotMessage('业务繁忙，请稍后再试-3', false);
         }
 
