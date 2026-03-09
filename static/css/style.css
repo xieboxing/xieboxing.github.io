@@ -788,3 +788,174 @@
             color: #00f0ff;
             font-size: 1.1rem;
         }
+
+/* ========== 全浏览器移动端深色模式兼容性优化 ========== */
+/* 新增代码开始 - 仅新增，不修改原有代码 */
+
+/* 全浏览器兼容：禁止自动调整页面颜色与对比度，锁定原有设计效果 */
+:root, html {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-text-size-adjust: 100% !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-size-adjust: 100% !important;
+    tap-highlight-color: transparent !important;
+}
+
+/* 仅移动端深色模式生效：增强文字对比度，解决看不清的问题 */
+@media (max-width: 768px) and (prefers-color-scheme: dark) {
+    /* 基础文字对比度增强 */
+    body {
+        color: #f0f5ff !important;
+        text-shadow: 0 0 1px rgba(0, 240, 255, 0.3) !important;
+    }
+
+    /* 标题文字增强 */
+    .left-name,
+    .section-title,
+    .skill-card h3,
+    .project-card h3,
+    .edu-title,
+    .company,
+    .work-experience h3,
+    .education h3 {
+        color: #ffffff !important;
+        text-shadow: 0 0 3px rgba(0, 240, 255, 0.5) !important;
+    }
+
+    /* 正文文字增强 */
+    .left-bio,
+    .skill-card li,
+    .project-card li,
+    .timeline-content p,
+    .edu-desc,
+    .contact-list li,
+    .qr-text,
+    footer {
+        color: #d0e0ff !important;
+    }
+
+    /* 按钮与标签文字增强 */
+    .tag,
+    .copy-wechat-btn,
+    .tool-btn {
+        color: #ffffff !important;
+        text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
+    }
+
+    /* 边框与发光效果增强 */
+    .left-sidebar,
+    .skill-card,
+    .project-card,
+    .edu-card,
+    .timeline-item,
+    .tag,
+    .tool-btn {
+        border-color: rgba(0, 240, 255, 0.3) !important;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
+    }
+
+    /* 链接颜色增强 */
+    a {
+        color: #a0d0ff !important;
+    }
+
+    /* 图标颜色增强 */
+    .contact-list i,
+    .skill-card h3 i,
+    .qr-text i,
+    .copy-wechat-btn i {
+        color: #00f0ff !important;
+        filter: drop-shadow(0 0 3px #00f0ff) !important;
+    }
+
+    /* 进度条增强 */
+    #scroll-progress-fill {
+        background: linear-gradient(180deg, #00ffff, #b020f0) !important;
+        box-shadow: 0 0 20px #00f0ff, 0 0 40px #a020f0 !important;
+    }
+
+    /* 二维码边框增强 */
+    .qr-placeholder {
+        border-color: #00f0ff !important;
+        box-shadow: 0 0 25px #00f0ff !important;
+    }
+
+    /* 流光边框效果增强 */
+    .skill-card:hover::after,
+    .project-card:hover::after,
+    .edu-card:hover::after,
+    .timeline-item:hover::after,
+    .left-sidebar:hover::after,
+    .tag:hover::after,
+    .tool-btn:hover::after {
+        opacity: 1 !important;
+        animation: rainbowBorder 1.5s linear infinite !important;
+    }
+}
+
+/* JS兜底适配：深色模式专属class样式（与媒体查询保持一致） */
+html.dark-mode-detected {
+    /* 仅在移动端生效，通过JS检测添加 */
+}
+html.dark-mode-detected body {
+    color: #f0f5ff !important;
+    text-shadow: 0 0 1px rgba(0, 240, 255, 0.3) !important;
+}
+html.dark-mode-detected .left-name,
+html.dark-mode-detected .section-title,
+html.dark-mode-detected .skill-card h3,
+html.dark-mode-detected .project-card h3,
+html.dark-mode-detected .edu-title,
+html.dark-mode-detected .company,
+html.dark-mode-detected .work-experience h3,
+html.dark-mode-detected .education h3 {
+    color: #ffffff !important;
+    text-shadow: 0 0 3px rgba(0, 240, 255, 0.5) !important;
+}
+html.dark-mode-detected .left-bio,
+html.dark-mode-detected .skill-card li,
+html.dark-mode-detected .project-card li,
+html.dark-mode-detected .timeline-content p,
+html.dark-mode-detected .edu-desc,
+html.dark-mode-detected .contact-list li,
+html.dark-mode-detected .qr-text,
+html.dark-mode-detected footer {
+    color: #d0e0ff !important;
+}
+html.dark-mode-detected .tag,
+html.dark-mode-detected .copy-wechat-btn,
+html.dark-mode-detected .tool-btn {
+    color: #ffffff !important;
+    text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
+}
+html.dark-mode-detected .left-sidebar,
+html.dark-mode-detected .skill-card,
+html.dark-mode-detected .project-card,
+html.dark-mode-detected .edu-card,
+html.dark-mode-detected .timeline-item,
+html.dark-mode-detected .tag,
+html.dark-mode-detected .tool-btn {
+    border-color: rgba(0, 240, 255, 0.3) !important;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
+}
+html.dark-mode-detected a {
+    color: #a0d0ff !important;
+}
+html.dark-mode-detected .contact-list i,
+html.dark-mode-detected .skill-card h3 i,
+html.dark-mode-detected .qr-text i,
+html.dark-mode-detected .copy-wechat-btn i {
+    color: #00f0ff !important;
+    filter: drop-shadow(0 0 3px #00f0ff) !important;
+}
+html.dark-mode-detected #scroll-progress-fill {
+    background: linear-gradient(180deg, #00ffff, #b020f0) !important;
+    box-shadow: 0 0 20px #00f0ff, 0 0 40px #a020f0 !important;
+}
+html.dark-mode-detected .qr-placeholder {
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 25px #00f0ff !important;
+}
+
+/* 新增代码结束 */
