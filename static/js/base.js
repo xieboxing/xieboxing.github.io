@@ -136,173 +136,136 @@
             // 移动端无进度条，但保留函数
         });
 
-        /* 检测移动端设备与深色模式，仅在移动端执行适配逻辑 */
+        /* ============================================== */
+        /* 模块：移动端深色模式统一适配入口 - 封装函数 mobileDarkModeAdapt */
+        /* ============================================== */
         (function() {
-            // 检测是否为移动端
+            'use strict';
+
+            /* 步骤一：移动端设备检测 */
             function isMobileDevice() {
-                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                    (window.innerWidth <= 900 && window.innerHeight <= 1024);
+                // 用户代理检测
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                var isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(userAgent);
+                // 屏幕尺寸检测
+                var isSmallScreen = window.innerWidth <= 768;
+                var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                // 综合判断：用户代理是移动端或（小屏幕且支持触摸）
+                return isMobileUA || (isSmallScreen && isTouchDevice);
             }
 
-            // 检测是否开启深色模式
+            /* 步骤二：深色模式能力检测 */
             function isDarkMode() {
-                return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                // 标准媒体查询检测
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return true;
+                }
+                // 兜底检测：检查系统主题色（仅作为备用）
+                try {
+                    if (window.__theme && window.__theme === 'dark') return true;
+                    if (window.systemTheme && window.systemTheme === 'dark') return true;
+                } catch (e) {}
+                // 启发式检测背景色亮度
+                var computedStyle = window.getComputedStyle(document.documentElement);
+                var bgColor = computedStyle.backgroundColor || computedStyle.background;
+                if (bgColor && (bgColor.indexOf('rgb(0,') !== -1 || bgColor.indexOf('rgba(0,') !== -1 ||
+                    bgColor.indexOf('#000') !== -1 || bgColor.indexOf('rgb(10,') !== -1 ||
+                    bgColor.indexOf('rgb(16,') !== -1)) {
+                    return true;
+                }
+                return false;
             }
 
-            // 仅在移动端且深色模式下执行适配
-            if (isMobileDevice() && isDarkMode()) {
-                console.log('检测到移动端深色模式，执行样式锁定适配');
+            /* 步骤三：小米浏览器检测 */
+            function isMiBrowser() {
+                var userAgent = navigator.userAgent || '';
+                // 小米自带浏览器标识检测
+                return /MiuiBrowser|XiaoMi|Mi\s+/i.test(userAgent) ||
+                       (userAgent.indexOf('Android') !== -1 && userAgent.indexOf('Mi') !== -1 && userAgent.indexOf('Browser') !== -1);
+            }
 
-                // 在html标签上添加深色模式标识类，供CSS使用
-                document.documentElement.classList.add('dark-mode-detected');
+            /* 步骤四：适配样式触发函数 */
+            function applyDarkModeAdaptation() {
+                var htmlEl = document.documentElement;
+                var isDark = isDarkMode();
+                var isMobile = isMobileDevice();
+                var isMi = isMiBrowser();
 
-                // 强制设置meta viewport，防止浏览器缩放导致样式错乱（可选）
-                var metaViewport = document.querySelector('meta[name="viewport"]');
-                if (metaViewport) {
-                    var content = metaViewport.getAttribute('content');
-                    if (content.indexOf('maximum-scale') === -1) {
-                        metaViewport.setAttribute('content', content + ', maximum-scale=1.0');
-                    }
+                // 仅在移动端执行适配
+                if (!isMobile) {
+                    console.log('非移动端设备，跳过深色模式适配');
+                    return;
                 }
 
-                // 监听深色模式变化，如果用户切换模式，重新锁定样式
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-                    if (e.matches) {
-                        document.documentElement.classList.add('dark-mode-detected');
-                        console.log('深色模式已开启，重新锁定样式');
-                    } else {
-                        document.documentElement.classList.remove('dark-mode-detected');
-                        console.log('深色模式已关闭，移除锁定');
+                // 深色模式适配
+                if (isDark) {
+                    if (!htmlEl.classList.contains('dark-mode-detected')) {
+                        htmlEl.classList.add('dark-mode-detected');
                     }
+                    console.log('移动端深色模式检测通过，已添加优化样式类');
+                    // 强化meta viewport锁定，防止浏览器缩放导致样式错乱
+                    var metaViewport = document.querySelector('meta[name="viewport"]');
+                    if (metaViewport) {
+                        var content = metaViewport.getAttribute('content');
+                        if (content && content.indexOf('maximum-scale') === -1 && content.indexOf('user-scalable') === -1) {
+                            metaViewport.setAttribute('content', content + ', maximum-scale=1.0, user-scalable=no');
+                        }
+                    }
+                } else {
+                    htmlEl.classList.remove('dark-mode-detected');
+                    console.log('移动端浅色模式，已移除优化样式类');
+                }
+
+                // 小米浏览器专属适配
+                if (isMi) {
+                    if (!htmlEl.classList.contains('mi-browser')) {
+                        htmlEl.classList.add('mi-browser');
+                    }
+                    console.log('小米浏览器检测通过，已添加专属适配类');
+                } else {
+                    htmlEl.classList.remove('mi-browser');
+                }
+            }
+
+            /* 步骤五：深色模式状态监听 */
+            function setupDarkModeListeners() {
+                // 监听深色模式变化
+                if (window.matchMedia) {
+                    var darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                    darkModeMediaQuery.addEventListener('change', function(e) {
+                        if (isMobileDevice()) {
+                            applyDarkModeAdaptation();
+                            console.log('深色模式状态变化，重新应用适配');
+                        }
+                    });
+                }
+                // 监听窗口大小变化，防止设备旋转后检测失效
+                var resizeTimer;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function() {
+                        applyDarkModeAdaptation();
+                    }, 250);
                 });
             }
-        })();
 
-/* ========== 全浏览器移动端深色模式兼容性优化 ========== */
-/* 新增代码开始 - 仅新增，不修改原有JS业务逻辑 */
-
-/* 移动端设备检测：仅在移动端执行深色模式适配逻辑 */
-(function() {
-    'use strict';
-
-    // 检测是否为移动端设备
-    function isMobileDevice() {
-        // 用户代理检测
-        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        var isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(userAgent);
-
-        // 屏幕尺寸检测
-        var isSmallScreen = window.innerWidth <= 768;
-        var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-        // 综合判断：用户代理是移动端或（小屏幕且支持触摸）
-        return isMobileUA || (isSmallScreen && isTouchDevice);
-    }
-
-    // 全兼容深色模式检测：覆盖不支持标准媒体查询的老旧浏览器
-    function isDarkMode() {
-        // 标准媒体查询检测
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return true;
-        }
-
-        // 兜底检测：检查系统主题色（仅作为备用）
-        try {
-            // 某些浏览器支持非标准接口
-            if (window.__theme && window.__theme === 'dark') {
-                return true;
-            }
-            if (window.systemTheme && window.systemTheme === 'dark') {
-                return true;
-            }
-        } catch (e) {
-            // 忽略错误
-        }
-
-        // 最后尝试检测背景色亮度（启发式检测）
-        var computedStyle = window.getComputedStyle(document.documentElement);
-        var bgColor = computedStyle.backgroundColor || computedStyle.background;
-        // 简单判断是否为深色背景（粗略实现）
-        if (bgColor && (bgColor.indexOf('rgb(0,') !== -1 || bgColor.indexOf('rgba(0,') !== -1 ||
-            bgColor.indexOf('#000') !== -1 || bgColor.indexOf('rgb(10,') !== -1 ||
-            bgColor.indexOf('rgb(16,') !== -1)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // 仅在移动端执行深色模式适配
-    if (isMobileDevice()) {
-        console.log('移动端设备检测通过，执行深色模式兼容性优化');
-
-        // 初始化检测
-        function initDarkModeAdaptation() {
-            var isDark = isDarkMode();
-            var htmlEl = document.documentElement;
-
-            if (isDark) {
-                // 添加深色模式标识类
-                if (!htmlEl.classList.contains('dark-mode-detected')) {
-                    htmlEl.classList.add('dark-mode-detected');
-                }
-                console.log('深色模式检测通过，已添加优化样式类');
-
-                // 强化meta viewport锁定，防止浏览器缩放导致样式错乱
-                var metaViewport = document.querySelector('meta[name="viewport"]');
-                if (metaViewport) {
-                    var content = metaViewport.getAttribute('content');
-                    if (content && content.indexOf('maximum-scale') === -1 && content.indexOf('user-scalable') === -1) {
-                        metaViewport.setAttribute('content', content + ', maximum-scale=1.0, user-scalable=no');
-                    }
+            /* 主执行逻辑：仅在移动端初始化适配 */
+            if (isMobileDevice()) {
+                console.log('移动端设备检测通过，初始化深色模式适配');
+                // 页面加载完成后执行初始化
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        applyDarkModeAdaptation();
+                        setupDarkModeListeners();
+                    });
+                } else {
+                    applyDarkModeAdaptation();
+                    setupDarkModeListeners();
                 }
             } else {
-                // 移除深色模式标识类
-                htmlEl.classList.remove('dark-mode-detected');
-                console.log('浅色模式，已移除优化样式类');
+                console.log('非移动端设备，跳过深色模式适配初始化');
             }
-        }
-
-        // 页面加载完成后执行初始化
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDarkModeAdaptation);
-        } else {
-            initDarkModeAdaptation();
-        }
-
-        // 监听深色模式变化（仅当浏览器支持时）
-        if (window.matchMedia) {
-            var darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            darkModeMediaQuery.addEventListener('change', function(e) {
-                if (isMobileDevice()) {
-                    if (e.matches) {
-                        document.documentElement.classList.add('dark-mode-detected');
-                        console.log('深色模式已开启，重新锁定样式');
-                    } else {
-                        document.documentElement.classList.remove('dark-mode-detected');
-                        console.log('深色模式已关闭，移除锁定');
-                    }
-                }
-            });
-        }
-
-        // 监听窗口大小变化，防止设备旋转后检测失效
-        var resizeTimer;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function() {
-                if (!isMobileDevice()) {
-                    // 如果旋转后变为PC端，移除深色模式类
-                    document.documentElement.classList.remove('dark-mode-detected');
-                } else {
-                    // 重新检测深色模式
-                    initDarkModeAdaptation();
-                }
-            }, 250);
-        });
-    } else {
-        console.log('非移动端设备，跳过深色模式兼容性优化');
-    }
-})();
-
-/* 新增代码结束 */
+        })();
+        /* ============================================== */
+        /* 移动端深色模式统一适配入口 - 结束 */
+        /* ============================================== */

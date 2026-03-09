@@ -792,22 +792,65 @@
 /* ========== 全浏览器移动端深色模式兼容性优化 ========== */
 /* 新增代码开始 - 仅新增，不修改原有代码 */
 
-/* 全浏览器兼容：禁止自动调整页面颜色与对比度，锁定原有设计效果 */
+/* ============================================== */
+/* 模块一：全局颜色锁定规则 - 禁止所有浏览器深色模式强制篡改 */
+/* ============================================== */
 :root, html {
+    /* 全浏览器兼容：禁止自动调整页面颜色与对比度，锁定原有设计效果 */
     -webkit-tap-highlight-color: transparent !important;
     -webkit-text-size-adjust: 100% !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
     text-size-adjust: 100% !important;
     tap-highlight-color: transparent !important;
+    /* 小米浏览器专属：禁止内核强制调整页面颜色与亮度 */
+    -webkit-appearance: none !important;
+    -webkit-touch-callout: none !important;
 }
 
-/* 仅移动端深色模式生效：增强文字对比度，解决看不清的问题 */
+/* ============================================== */
+/* 模块二：通用移动端深色模式适配规则 - 增强对比度与可见度 */
+/* ============================================== */
+/* 仅移动端深色模式生效：合并所有适配规则，增强文字对比度、边框发光效果 */
 @media (max-width: 768px) and (prefers-color-scheme: dark) {
-    /* 基础文字对比度增强 */
+    /* 基础颜色锁定（兼容早期适配规则） */
     body {
+        background-color: #0a0c14 !important;
         color: #f0f5ff !important;
         text-shadow: 0 0 1px rgba(0, 240, 255, 0.3) !important;
+    }
+    /* 强制锁定所有卡片背景色、边框色（兼容早期适配规则） */
+    .left-sidebar,
+    .skill-card,
+    .project-card,
+    .edu-card,
+    .timeline-item,
+    .tag,
+    .tool-btn,
+    .wechat-toast {
+        background-color: rgba(18, 25, 40, 0.9) !important;
+        border-color: rgba(0, 240, 255, 0.3) !important;
+        color: #e0e5f0 !important;
+    }
+    /* 强制锁定按钮颜色（兼容早期适配规则） */
+    .copy-wechat-btn {
+        background-color: rgba(0, 30, 50, 0.8) !important;
+        border-color: #00f0ff40 !important;
+        color: #b0e0ff !important;
+    }
+    /* 强制锁定二维码区域（兼容早期适配规则） */
+    .qr-placeholder {
+        background-color: #ffffff !important;
+        border-color: #00f0ff !important;
+        box-shadow: 0 0 25px #00f0ff !important;
+    }
+    /* 强制锁定进度条（兼容早期适配规则） */
+    #scroll-progress {
+        background: #1a2639 !important;
+    }
+    #scroll-progress-fill {
+        background: linear-gradient(180deg, #00ffff, #b020f0) !important;
+        box-shadow: 0 0 20px #00f0ff, 0 0 40px #a020f0 !important;
     }
 
     /* 标题文字增强 */
@@ -851,7 +894,6 @@
     .timeline-item,
     .tag,
     .tool-btn {
-        border-color: rgba(0, 240, 255, 0.3) !important;
         box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
     }
 
@@ -869,18 +911,6 @@
         filter: drop-shadow(0 0 3px #00f0ff) !important;
     }
 
-    /* 进度条增强 */
-    #scroll-progress-fill {
-        background: linear-gradient(180deg, #00ffff, #b020f0) !important;
-        box-shadow: 0 0 20px #00f0ff, 0 0 40px #a020f0 !important;
-    }
-
-    /* 二维码边框增强 */
-    .qr-placeholder {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 25px #00f0ff !important;
-    }
-
     /* 流光边框效果增强 */
     .skill-card:hover::after,
     .project-card:hover::after,
@@ -894,13 +924,131 @@
     }
 }
 
-/* JS兜底适配：深色模式专属class样式（与媒体查询保持一致） */
-html.dark-mode-detected {
-    /* 仅在移动端生效，通过JS检测添加 */
+/* ============================================== */
+/* 模块三：小米浏览器专属适配规则 - 针对定制化webkit内核强制修复 */
+/* ============================================== */
+/* 仅在移动端生效，通过JS检测添加.mi-browser类名后触发 */
+@media (max-width: 768px) {
+    html.mi-browser {
+        /* 禁止小米浏览器内核强制颜色篡改与亮度调整 */
+        -webkit-filter: none !important;
+        filter: none !important;
+    }
+    html.mi-browser body {
+        -webkit-filter: none !important;
+        filter: none !important;
+        background-color: #0a0c14 !important;
+        color: #e0e5f0 !important;
+    }
+    /* 强制锁定所有元素颜色，防止小米浏览器发灰、对比度不足 */
+    html.mi-browser .left-sidebar,
+    html.mi-browser .skill-card,
+    html.mi-browser .project-card,
+    html.mi-browser .edu-card,
+    html.mi-browser .timeline-item,
+    html.mi-browser .tag,
+    html.mi-browser .tool-btn,
+    html.mi-browser .wechat-toast {
+        background-color: rgba(18, 25, 40, 0.9) !important;
+        border-color: rgba(0, 255, 255, 0.2) !important;
+        color: #e0e5f0 !important;
+        -webkit-filter: none !important;
+        filter: none !important;
+    }
+    html.mi-browser .copy-wechat-btn {
+        background-color: rgba(0, 30, 50, 0.8) !important;
+        border-color: #00f0ff40 !important;
+        color: #b0e0ff !important;
+    }
+    html.mi-browser .qr-placeholder {
+        background-color: #ffffff !important;
+        border-color: #00f0ff !important;
+        box-shadow: 0 0 25px #00f0ff !important;
+    }
+    html.mi-browser #scroll-progress {
+        background: #1a2639 !important;
+    }
+    html.mi-browser #scroll-progress-fill {
+        background: linear-gradient(180deg, #00f0ff, #a020f0) !important;
+        box-shadow: 0 0 15px #00f0ff, 0 0 30px #a020f0 !important;
+    }
+    /* 增强文字对比度，解决小米浏览器深色模式文字发灰 */
+    html.mi-browser .left-name,
+    html.mi-browser .section-title,
+    html.mi-browser .skill-card h3,
+    html.mi-browser .project-card h3,
+    html.mi-browser .edu-title,
+    html.mi-browser .company,
+    html.mi-browser .work-experience h3,
+    html.mi-browser .education h3 {
+        color: #ffffff !important;
+        text-shadow: 0 0 3px rgba(0, 240, 255, 0.5) !important;
+    }
+    html.mi-browser .left-bio,
+    html.mi-browser .skill-card li,
+    html.mi-browser .project-card li,
+    html.mi-browser .timeline-content p,
+    html.mi-browser .edu-desc,
+    html.mi-browser .contact-list li,
+    html.mi-browser .qr-text,
+    html.mi-browser footer {
+        color: #d0e0ff !important;
+    }
+    html.mi-browser .tag,
+    html.mi-browser .copy-wechat-btn,
+    html.mi-browser .tool-btn {
+        color: #ffffff !important;
+        text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
+    }
+    html.mi-browser a {
+        color: #f0f5ff !important;
+    }
+    html.mi-browser .contact-list i,
+    html.mi-browser .skill-card h3 i,
+    html.mi-browser .qr-text i,
+    html.mi-browser .copy-wechat-btn i {
+        color: #00f0ff !important;
+        filter: drop-shadow(0 0 3px #00f0ff) !important;
+    }
 }
+
+/* ============================================== */
+/* 模块四：JS兜底适配 - 深色模式专属class样式（与媒体查询保持一致） */
+/* ============================================== */
+/* 通过JS检测添加.dark-mode-detected类名，覆盖不支持prefers-color-scheme的浏览器 */
 html.dark-mode-detected body {
+    background-color: #0a0c14 !important;
     color: #f0f5ff !important;
     text-shadow: 0 0 1px rgba(0, 240, 255, 0.3) !important;
+}
+html.dark-mode-detected .left-sidebar,
+html.dark-mode-detected .skill-card,
+html.dark-mode-detected .project-card,
+html.dark-mode-detected .edu-card,
+html.dark-mode-detected .timeline-item,
+html.dark-mode-detected .tag,
+html.dark-mode-detected .tool-btn,
+html.dark-mode-detected .wechat-toast {
+    background-color: rgba(18, 25, 40, 0.9) !important;
+    border-color: rgba(0, 240, 255, 0.3) !important;
+    color: #e0e5f0 !important;
+}
+html.dark-mode-detected .copy-wechat-btn {
+    background-color: rgba(0, 30, 50, 0.8) !important;
+    border-color: #00f0ff40 !important;
+    color: #b0e0ff !important;
+}
+html.dark-mode-detected .qr-placeholder {
+    background-color: #ffffff !important;
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 25px #00f0ff !important;
+}
+html.dark-mode-detected #scroll-progress {
+    background: #1a2639 !important;
+}
+html.dark-mode-detected #scroll-progress-fill {
+    background: linear-gradient(180deg, #00ffff, #b020f0) !important;
+    box-shadow: 0 0 20px #00f0ff, 0 0 40px #a020f0 !important;
 }
 html.dark-mode-detected .left-name,
 html.dark-mode-detected .section-title,
@@ -929,16 +1077,6 @@ html.dark-mode-detected .tool-btn {
     color: #ffffff !important;
     text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
 }
-html.dark-mode-detected .left-sidebar,
-html.dark-mode-detected .skill-card,
-html.dark-mode-detected .project-card,
-html.dark-mode-detected .edu-card,
-html.dark-mode-detected .timeline-item,
-html.dark-mode-detected .tag,
-html.dark-mode-detected .tool-btn {
-    border-color: rgba(0, 240, 255, 0.3) !important;
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
-}
 html.dark-mode-detected a {
     color: #a0d0ff !important;
 }
@@ -949,13 +1087,15 @@ html.dark-mode-detected .copy-wechat-btn i {
     color: #00f0ff !important;
     filter: drop-shadow(0 0 3px #00f0ff) !important;
 }
-html.dark-mode-detected #scroll-progress-fill {
-    background: linear-gradient(180deg, #00ffff, #b020f0) !important;
-    box-shadow: 0 0 20px #00f0ff, 0 0 40px #a020f0 !important;
-}
-html.dark-mode-detected .qr-placeholder {
-    border-color: #00f0ff !important;
-    box-shadow: 0 0 25px #00f0ff !important;
+html.dark-mode-detected .skill-card:hover::after,
+html.dark-mode-detected .project-card:hover::after,
+html.dark-mode-detected .edu-card:hover::after,
+html.dark-mode-detected .timeline-item:hover::after,
+html.dark-mode-detected .left-sidebar:hover::after,
+html.dark-mode-detected .tag:hover::after,
+html.dark-mode-detected .tool-btn:hover::after {
+    opacity: 1 !important;
+    animation: rainbowBorder 1.5s linear infinite !important;
 }
 
 /* 新增代码结束 */
