@@ -1,4 +1,12 @@
         /* ---------- 全局科技感重置 ---------- */
+        /* 声明页面配色方案为浅色，禁止浏览器自动深色模式颜色反转 */
+        :root, html {
+            color-scheme: light !important;
+            forced-color-adjust: none !important;
+            color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -666,6 +674,50 @@
                 overflow-wrap: break-word;
                 hyphens: auto;
                 white-space: normal;
+            }
+
+            /* 仅移动端生效：深色模式兜底适配，防止样式错乱 */
+            @media (prefers-color-scheme: dark) {
+                /* 强制锁定页面背景色、文字色，防止浏览器篡改 */
+                body {
+                    background-color: #0a0c14 !important;
+                    color: #e0e5f0 !important;
+                }
+                /* 强制锁定所有卡片背景色、边框色 */
+                .left-sidebar,
+                .skill-card,
+                .project-card,
+                .edu-card,
+                .timeline-item,
+                .tag,
+                .tool-btn,
+                .wechat-toast {
+                    background-color: rgba(18, 25, 40, 0.9) !important;
+                    border-color: rgba(0, 255, 255, 0.2) !important;
+                    color: #e0e5f0 !important;
+                }
+                /* 强制锁定链接颜色 */
+                a {
+                    color: #f0f5ff !important;
+                }
+                /* 强制锁定按钮颜色 */
+                .copy-wechat-btn {
+                    background-color: rgba(0, 30, 50, 0.8) !important;
+                    border-color: #00f0ff40 !important;
+                    color: #b0e0ff !important;
+                }
+                /* 强制锁定二维码区域 */
+                .qr-placeholder {
+                    background-color: #ffffff !important;
+                    border-color: #00f0ff !important;
+                }
+                /* 强制锁定进度条 */
+                #scroll-progress {
+                    background: #1a2639 !important;
+                }
+                #scroll-progress-fill {
+                    background: linear-gradient(180deg, #00f0ff, #a020f0) !important;
+                }
             }
             .skill-card h3 {
                 font-size: 1.1rem;

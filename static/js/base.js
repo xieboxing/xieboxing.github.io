@@ -135,3 +135,45 @@
 
             // 移动端无进度条，但保留函数
         });
+
+        /* 检测移动端设备与深色模式，仅在移动端执行适配逻辑 */
+        (function() {
+            // 检测是否为移动端
+            function isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                    (window.innerWidth <= 900 && window.innerHeight <= 1024);
+            }
+
+            // 检测是否开启深色模式
+            function isDarkMode() {
+                return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+
+            // 仅在移动端且深色模式下执行适配
+            if (isMobileDevice() && isDarkMode()) {
+                console.log('检测到移动端深色模式，执行样式锁定适配');
+
+                // 在html标签上添加深色模式标识类，供CSS使用
+                document.documentElement.classList.add('dark-mode-detected');
+
+                // 强制设置meta viewport，防止浏览器缩放导致样式错乱（可选）
+                var metaViewport = document.querySelector('meta[name="viewport"]');
+                if (metaViewport) {
+                    var content = metaViewport.getAttribute('content');
+                    if (content.indexOf('maximum-scale') === -1) {
+                        metaViewport.setAttribute('content', content + ', maximum-scale=1.0');
+                    }
+                }
+
+                // 监听深色模式变化，如果用户切换模式，重新锁定样式
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                    if (e.matches) {
+                        document.documentElement.classList.add('dark-mode-detected');
+                        console.log('深色模式已开启，重新锁定样式');
+                    } else {
+                        document.documentElement.classList.remove('dark-mode-detected');
+                        console.log('深色模式已关闭，移除锁定');
+                    }
+                });
+            }
+        })();
