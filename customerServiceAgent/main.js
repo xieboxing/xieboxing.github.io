@@ -1,6 +1,6 @@
 // 全局变量
 const TOKEN_CACHE_KEY = 'page_token_cache'; // localStorage存储token的键名
-let token = '';
+let token = 'ewogICJhbGciOiAiSFMyNTYiLAogICJ1aWQiOiAiMTAwMDAxIgp9.ewogICJwYXNzd29yZCI6ICJjaHVhbmd6YW9haSIsCiAgImV4cCI6ICIyMDI2LTAzLTMxIgp9.H4Zu_VEYVJHTjcBR9vcmfQWwbb3sBD2gZShF30lyW-Y';
 let isLoading = false;
 let loadingTextInterval = null;
 let currentBotMessageElement = null; // 当前正在更新的机器人消息元素
