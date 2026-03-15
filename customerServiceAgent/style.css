@@ -654,6 +654,11 @@ footer p {
         overflow-y: auto;
         max-height: unset;
         overflow-x: hidden; /* 防止横向滚动条 */
+        /* 【移动端布局优化】取消PC端缩放效果，解决H5页面大面积空白留白问题 */
+        /* 移动端应自适应屏幕，不需要额外缩放 */
+        transform: none;
+        /* 重置缩放原点，确保布局正常 */
+        transform-origin: top left;
     }
 
     footer {
@@ -770,6 +775,12 @@ footer p {
 
 /* 小屏幕手机适配（320px-480px） - 增强H5移动端兼容 */
 @media (max-width: 480px) {
+    /* 【移动端布局优化】再次确保取消缩放效果，解决小屏幕手机空白问题 */
+    body {
+        transform: none;
+        transform-origin: top left;
+    }
+
     /* 进一步缩小字体和间距 */
     .main-title {
         font-size: 1.5rem;
