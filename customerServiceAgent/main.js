@@ -540,6 +540,12 @@ async function sendMessage() {
     /* ===================== 敏感词检测（用户输入） ===================== */
     // 调用judgeMessage检测用户输入是否包含敏感词
     if (typeof judgeMessage === 'function' && !judgeMessage(userInput)) {
+        // 获取匹配到的敏感词列表
+        const matchedWords = typeof getMatchedSensitiveWords === 'function'
+            ? getMatchedSensitiveWords(userInput)
+            : [];
+        const sensitiveWordsStr = matchedWords.length > 0 ? `：${matchedWords.join('、')}` : '';
+
         // 【重要】敏感词拦截：用户消息显示在聊天框，但不放入history，直接返回拦截提示
         isLoading = true;
         chatInput.prop('disabled', true);
@@ -557,8 +563,8 @@ async function sendMessage() {
             // 隐藏加载状态
             hideLoading();
 
-            // 显示拦截提示
-            log('用户输入包含敏感词，已拦截');
+            // 显示拦截提示，日志中输出具体敏感词
+            log(`用户输入包含敏感词：【${sensitiveWordsStr}】，已拦截`);
             addBotMessage('我们有责任确保每一次的交流都是正向的。对于您的这个问题，我们无法提供帮助。您是否可以提供其他的问题或者方向?', false);
 
             isLoading = false;
