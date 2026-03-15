@@ -9,6 +9,58 @@ let currentLoadingElement = null; // 当前动态加载状态元素
 const API_URL = 'https://api.coze.cn/v1/workflow/stream_run'; // 固定接口地址
 const WORKFLOW_ID = '7613706615358914575'; // 固定工作流ID
 
+/* 初始化history数组，用于存储最近10轮对话 */
+let history = [];
+
+/* ===================== 聊天记录上下文管理功能 ===================== */
+/**
+ * 将用户消息添加到history数组（全量保留用户输入内容）
+ * @param {string} content - 用户发送的消息内容
+ */
+function addUserMessageToHistory(content) {
+    if (!content || typeof content !== 'string') return;
+
+    // 用户消息添加到history：全量保留用户输入内容
+    history.push({
+        role: "user",
+        content: content
+    });
+
+    // 限制history长度：超过10轮则删除最早的一轮，仅保留最近10轮
+    limitHistoryLength();
+}
+
+/**
+ * 将AI回复添加到history数组（仅保留前100字符，超出部分截断）
+ * @param {string} content - AI回复的消息内容
+ */
+function addAssistantMessageToHistory(content) {
+    if (!content || typeof content !== 'string') return;
+
+    // AI回复添加到history：仅保留前100字符，超出部分截断
+    const truncatedContent = content.length > 100 ? content.substring(0, 100) : content;
+
+    history.push({
+        role: "assistant",
+        content: truncatedContent
+    });
+
+    // 限制history长度：超过10轮则删除最早的一轮，仅保留最近10轮
+    limitHistoryLength();
+}
+
+/**
+ * 限制history数组长度：超过10轮则删除最早的一轮，仅保留最近10轮
+ */
+function limitHistoryLength() {
+    // 每轮对话包含user和assistant两条消息，10轮对话最多20条消息
+    // 但按照需求，一轮对话是指一组user+assistant，所以最多10组
+    // 这里按消息条数限制：每轮2条，10轮最多20条
+    while (history.length > 20) {
+        history.shift(); // 删除最早的一条消息
+    }
+}
+
 /* ===================== Action类型交互功能 ===================== */
 /**
  * 从结果项中提取action字段
@@ -485,6 +537,39 @@ async function sendMessage() {
         return;
     }
 
+    /* ===================== 敏感词检测（用户输入） ===================== */
+    // 调用judgeMessage检测用户输入是否包含敏感词
+    if (typeof judgeMessage === 'function' && !judgeMessage(userInput)) {
+        // 【重要】敏感词拦截：用户消息显示在聊天框，但不放入history，直接返回拦截提示
+        isLoading = true;
+        chatInput.prop('disabled', true);
+        sendBtn.prop('disabled', true);
+
+        // 用户消息显示在聊天框（但不加入history）
+        addUserMessage(userInput);
+        chatInput.val('').trigger('input');
+
+        // 显示加载状态
+        showLoading();
+
+        // 短暂延迟后恢复输入状态
+        setTimeout(function() {
+            // 隐藏加载状态
+            hideLoading();
+
+            // 显示拦截提示
+            log('用户输入包含敏感词，已拦截');
+            addBotMessage('我们有责任确保每一次的交流都是正向的。对于您的这个问题，我们无法提供帮助。您是否可以提供其他的问题或者方向?', false);
+
+            isLoading = false;
+            chatInput.prop('disabled', false);
+            sendBtn.prop('disabled', false);
+            log('输入框和按钮已恢复可用');
+        }, 1500);
+        return;
+    }
+    /* ===================== 敏感词检测结束 ===================== */
+
     // 禁用输入框和按钮，防止重复提交
     isLoading = true;
     chatInput.prop('disabled', true);
@@ -493,6 +578,9 @@ async function sendMessage() {
     // 添加用户消息到聊天框
     addUserMessage(userInput);
     log(`用户发送消息: ${userInput}`);
+
+    /* 用户消息添加到history：全量保留用户输入内容 */
+    addUserMessageToHistory(userInput);
 
     // 清空输入框，并触发input事件以更新字符计数显示
     chatInput.val('').trigger('input');
@@ -508,7 +596,9 @@ async function sendMessage() {
                 "CONVERSATION_NAME": "Default",
                 "USER_INPUT": userInput,
                 "content": userInput,
-                "token": token
+                "token": token,
+                /* 接口传参：将history数组添加到请求参数中 */
+                "history": history
             }
         };
 
@@ -593,7 +683,10 @@ async function sendMessage() {
         result = JSON.parse(accumulatedResponse);
         }catch(e){
             log(`最终回复JSON解析失败: ${e.message}, 原始内容: ${accumulatedResponse}`);
-            addBotMessage('访问人数过多，业务繁忙，请稍后再试-1', false);
+            const parseErrorMsg = '访问人数过多，业务繁忙，请稍后再试-1';
+            addBotMessage(parseErrorMsg, false);
+            /* AI回复添加到history：仅保留前100字符 */
+            addAssistantMessageToHistory(parseErrorMsg);
             return;
         }
         
@@ -603,18 +696,27 @@ async function sendMessage() {
             const errorMessage = result?.message || '接口返回错误状态';
             addBotMessage(errorMessage, false);
             log(`Agent调用完成，错误状态: ${errorMessage}`);
+            /* AI回复添加到history：仅保留前100字符 */
+            addAssistantMessageToHistory(errorMessage);
         } else {
             // 状态为1：正常处理resultArr
             const resultArr = result.resultArr || [];
             let replySummary = ''; // 用于日志记录的回复摘要
+            let allAssistantContent = ''; // 用于合并所有AI回复内容，添加到history
 
             if (resultArr.length === 1) {
                 // 单个问题：直接渲染一条消息
                 const item = resultArr[0];
                 const content = extractTextContent(item); // 提取文本内容
                 const action = extractAction(item); // 提取action字段
-                addBotMessage(content, false, action);
-                replySummary = content.substring(0, 100) + (content.length > 100 ? '...' : '');
+                /* ===================== 敏感词过滤（API返回内容） ===================== */
+                // 对API返回内容进行敏感词过滤（跳过标点符号）
+                const filteredContent = (typeof filterApiResponse === 'function') ? filterApiResponse(content) : content;
+                /* ===================== 敏感词过滤结束 ===================== */
+                addBotMessage(filteredContent, false, action);
+                replySummary = filteredContent.substring(0, 100) + (filteredContent.length > 100 ? '...' : '');
+                /* AI回复添加到history：仅保留前100字符 */
+                addAssistantMessageToHistory(filteredContent);
             } else {
                 // 多个问题：先渲染说明消息，再逐条渲染
                 const count = resultArr.length;
@@ -626,10 +728,19 @@ async function sendMessage() {
                     const qr = item.QR || `问题 ${i + 1}`;
                     const content = extractTextContent(item);
                     const action = extractAction(item);
+                    /* ===================== 敏感词过滤（API返回内容） ===================== */
+                    // 对API返回内容进行敏感词过滤
+                    const filteredContent = (typeof filterMessage === 'function') ? filterMessage(content) : content;
+                    /* ===================== 敏感词过滤结束 ===================== */
                     // 组合QR和内容作为一条消息
-                    const messageContent = `${i + 1}. ${qr}\n${content}`;
+                    const messageContent = `${i + 1}. ${qr}\n${filteredContent}`;
                     addBotMessage(messageContent, false, action);
+                    /* 合并所有AI回复内容，用于添加到history */
+                    allAssistantContent += (allAssistantContent ? '\n' : '') + messageContent;
                 }
+
+                /* AI回复添加到history：多个问题时，合并所有回复内容后添加，仅保留前100字符 */
+                addAssistantMessageToHistory(allAssistantContent);
             }
 
             // 记录日志
@@ -637,17 +748,23 @@ async function sendMessage() {
         }
         // 无内容时给用户提示（保留原有逻辑，但正常情况下不会触发）
         if (!result || !result.resultArr || result.resultArr.length === 0) {
-            addBotMessage('业务繁忙，请稍后再试-3', false);
+            const noContentMsg = '业务繁忙，请稍后再试-3';
+            addBotMessage(noContentMsg, false);
+            /* AI回复添加到history：仅保留前100字符 */
+            addAssistantMessageToHistory(noContentMsg);
         }
 
     } catch (error) {
         // 全场景错误处理
         console.error('接口调用报错:', error);
-        const errorMsg = error.name === 'TimeoutError' 
-            ? '业务繁忙，请稍后再试-4' 
+        const errorMsg = error.name === 'TimeoutError'
+            ? '业务繁忙，请稍后再试-4'
             : error.message || '业务繁忙，请稍后再试-5';
         log(`请求失败: ${errorMsg}`);
-        addBotMessage('业务繁忙，请稍后再试-6', false);
+        const catchErrorMsg = '业务繁忙，请稍后再试-6';
+        addBotMessage(catchErrorMsg, false);
+        /* AI回复添加到history：仅保留前100字符 */
+        addAssistantMessageToHistory(catchErrorMsg);
     } finally {
         // 最终恢复状态，无论成功失败都执行
         hideLoading();

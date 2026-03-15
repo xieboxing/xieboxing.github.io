@@ -9,7 +9,15 @@
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- 引入自定义样式 -->
     <link rel="stylesheet" href="style.css">
+    <!-- 引入敏感词库（必须在敏感词过滤模块之前加载） -->
+    <script src="sensitiveWord.js"></script>
+     <!-- 引入 jQuery（指定CDN） -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
 </head>
+
 <body>
     <!-- 顶部标题区 -->
     <header class="header">
@@ -67,9 +75,9 @@
         </section>
     </main>
 
-    <!-- 引入 jQuery（指定CDN） -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script> -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- 引入敏感词过滤模块 -->
+    <script src="sensitiveFilter.js"></script>
     <!-- 引入自定义 JS -->
     <script src="main.js"></script>
 </body>
