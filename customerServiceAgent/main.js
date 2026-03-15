@@ -544,7 +544,7 @@ async function sendMessage() {
         const matchedWords = typeof getMatchedSensitiveWords === 'function'
             ? getMatchedSensitiveWords(userInput)
             : [];
-        const sensitiveWordsStr = matchedWords.length > 0 ? `：${matchedWords.join('、')}` : '';
+        const sensitiveWordsStr = matchedWords.length > 0 ? `${matchedWords.join('、')}` : '';
 
         // 【重要】敏感词拦截：用户消息显示在聊天框，但不放入history，直接返回拦截提示
         isLoading = true;
