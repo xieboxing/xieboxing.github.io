@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创造 AI 客服 Agent</title>
-    <!-- 引入 Font Awesome 图标库（指定CDN） -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"> -->
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- 引入自定义样式 -->
     <link rel="stylesheet" href="style.css">
     <!-- 引入敏感词库（必须在敏感词过滤模块之前加载） -->
@@ -35,7 +32,7 @@
                 <!-- 默认机器人欢迎消息 -->
                 <div class="message bot-message">
                     <div class="avatar bot-avatar">
-                        <i class="fas fa-robot"></i>
+                        <span class="avatar-icon">AI</span>
                     </div>
                     <div class="message-bubble bot-bubble">您好，有什么可以帮您？</div>
                 </div>
@@ -75,6 +72,10 @@
         </section>
     </main>
 
+    <footer>
+        <p class="footer-notice">当前开发与设计进度约 80%，工具查询与交易功能仍在持续优化。为节省资源，暂不支持闲聊功能。</p>
+        <p>创造 AI | Copyright ©2026</p>
+    </footer>
 
     <!-- 引入敏感词过滤模块 -->
     <script src="sensitiveFilter.js"></script>

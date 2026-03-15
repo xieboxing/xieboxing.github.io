@@ -14,7 +14,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: #0a0c14;
             background-image: 
                 linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
@@ -525,6 +525,13 @@
         }
         .project-card {
             padding: 1.5rem;
+            /* 使用 flexbox 让按钮对齐到底部 */
+            display: flex;
+            flex-direction: column;
+        }
+        .project-card ul {
+            list-style: none;
+            flex: 1; /* 让列表占据剩余空间，按钮自动推到底部 */
         }
         .project-card h3 {
             font-size: 1.2rem;
@@ -550,9 +557,6 @@
             margin: 0.3rem 0 0.8rem;
             border-left: 3px solid #00f0ff;
             padding-left: 0.6rem;
-        }
-        .project-card ul {
-            list-style: none;
         }
         .project-card li {
             margin-bottom: 0.5rem;
@@ -674,6 +678,21 @@
                 overflow-wrap: break-word;
                 hyphens: auto;
                 white-space: normal;
+            }
+
+            /* 项目卡片跳转按钮H5端样式优化 */
+            .project-link-btn {
+                font-size: 0.75rem;
+                padding: 0.6rem 1rem;
+                margin-top: 1rem;
+                /* 确保按钮在H5端不会被截断 */
+                box-sizing: border-box;
+            }
+
+            /* 项目提示文字H5端样式优化 */
+            .project-tip {
+                font-size: 0.7rem;
+                padding: 0.5rem 0.8rem;
             }
 
             /* 仅移动端生效：深色模式兜底适配，防止样式错乱 */
@@ -881,7 +900,8 @@
     /* 按钮与标签文字增强 */
     .tag,
     .copy-wechat-btn,
-    .tool-btn {
+    .tool-btn,
+    .project-link-btn {
         color: #ffffff !important;
         text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
     }
@@ -895,6 +915,11 @@
     .tag,
     .tool-btn {
         box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
+    }
+
+    /* 项目跳转按钮发光效果增强（亮度降低10%） */
+    .project-link-btn {
+        box-shadow: 0 0 18px #00d8e6, 0 0 36px #00d8e660 !important;
     }
 
     /* 链接颜色增强 */
@@ -996,7 +1021,8 @@
     }
     html.mi-browser .tag,
     html.mi-browser .copy-wechat-btn,
-    html.mi-browser .tool-btn {
+    html.mi-browser .tool-btn,
+    html.mi-browser .project-link-btn {
         color: #ffffff !important;
         text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
     }
@@ -1073,7 +1099,8 @@ html.dark-mode-detected footer {
 }
 html.dark-mode-detected .tag,
 html.dark-mode-detected .copy-wechat-btn,
-html.dark-mode-detected .tool-btn {
+html.dark-mode-detected .tool-btn,
+html.dark-mode-detected .project-link-btn {
     color: #ffffff !important;
     text-shadow: 0 0 2px rgba(0, 240, 255, 0.8) !important;
 }
@@ -1098,4 +1125,80 @@ html.dark-mode-detected .tool-btn:hover::after {
     animation: rainbowBorder 1.5s linear infinite !important;
 }
 
-/* 新增代码结束 */
+/* ========== 项目卡片跳转按钮样式 ========== */
+/* 统一设计风格：青蓝色渐变背景、圆角、发光效果、PC端和H5端兼容 */
+
+/* 项目提示文字 - 放在按钮上方 */
+.project-tip {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    color: #f0c040;
+    background: rgba(240, 192, 64, 0.1);
+    border-left: 3px solid #f0c040;
+    border-radius: 8px;
+    text-align: center;
+    animation: tipPulse 2s ease-in-out infinite;
+    flex-shrink: 0;  /* 防止提示文字被压缩 */
+}
+
+/* 提示文字呼吸动画 */
+@keyframes tipPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.project-link-btn {
+    /* 布局样式 */
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin-top: auto;  /* 自动推到底部，实现按钮对齐 */
+    padding: 0.65rem 1.2rem;
+
+    /* 字体样式 */
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    line-height: 1.6;  /* 多行文字行高，确保两行文字间距合适 */
+
+    /* 颜色与背景 - 青蓝色霓虹渐变（亮度降低10%） */
+    background: linear-gradient(135deg, #00e6e6, #0073e6);
+    color: #ffffff;
+    border: 1px solid #00d8e6;
+    border-radius: 40px;
+
+    /* 科技感发光效果（亮度降低10%） */
+    box-shadow: 0 0 14px #00d8e6, 0 0 28px #00d8e650;
+
+    /* 交互状态 */
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* 按钮悬浮效果 */
+.project-link-btn:hover {
+    /* 强化渐变亮度（hover时稍微提亮，但整体仍降低10%） */
+    background: linear-gradient(135deg, #00f2f2, #0080f2);
+    color: #ffffff;
+    border-color: transparent;
+
+    /* 放大发光特效（亮度降低10%） */
+    box-shadow: 0 0 22px #00d8e6, 0 0 45px #00d8e680;
+
+    /* 轻微放大 */
+    transform: translateY(-2px);
+}
+
+/* 按钮点击效果 */
+.project-link-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 9px #00d8e6, 0 0 18px #00d8e640;
+}
+
+/* ========== 新增代码结束 ========== */

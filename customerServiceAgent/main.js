@@ -379,7 +379,7 @@ function scrollLogsToBottom() {
  */
 function addUserMessage(content) {
     const messageDiv = $('<div class="message user-message"></div>');
-    const avatar = $('<div class="avatar user-avatar"><i class="fas fa-user"></i></div>');
+    const avatar = $('<div class="avatar user-avatar"><span class="avatar-icon">您</span></div>');
     const bubble = $('<div class="message-bubble user-bubble"></div>').text(content);
     messageDiv.append(avatar).append(bubble);
     $('#messagesContainer').append(messageDiv);
@@ -396,7 +396,7 @@ function addBotMessage(content, isStreaming = false, action = null) {
     if (!isStreaming || !currentBotMessageElement) {
         // 新建消息
         const messageDiv = $('<div class="message bot-message"></div>');
-        const avatar = $('<div class="avatar bot-avatar"><i class="fas fa-robot"></i></div>');
+        const avatar = $('<div class="avatar bot-avatar"><span class="avatar-icon">AI</span></div>');
         const bubble = $('<div class="message-bubble bot-bubble"></div>').text(content);
         // 创建气泡容器：垂直排列文本和action方块
         const bubbleContainer = $('<div class="message-bubble-container"></div>');

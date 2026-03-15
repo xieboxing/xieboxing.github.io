@@ -26,10 +26,10 @@ body {
 .header {
     margin-bottom: 20px;
     text-align: center;
-    padding: 15px 0;
+    padding: 10px 0 15px;
     border-bottom: 1px solid rgba(74, 158, 255, 0.2);
     /* 固定高度，不随内容变化 */
-    height: 120px;
+    height: 100px;
     flex-shrink: 0;
     overflow: hidden;
 }
@@ -61,7 +61,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     /* 修复边框发光被裁剪：改为visible，允许发光效果完整显示 */
-    height: calc(100vh - 160px);
+    height: calc(100vh - 140px);
     overflow: visible;
 }
 
@@ -134,16 +134,26 @@ body {
     font-size: 1.2rem;
     margin: 0 10px;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-icon {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.5px;
 }
 
 .bot-avatar {
-    background: linear-gradient(135deg, #4a9eff, #2d7dd2);
+    background: linear-gradient(135deg, #ff8c42, #ff6b35);
     order: 0;
+    border: 2px solid rgba(255, 140, 66, 0.5);
 }
 
 .user-avatar {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
     order: 2;
+    border: 2px solid rgba(155, 89, 182, 0.5);
 }
 
 /* 消息气泡 - 长文本自动换行 */
@@ -615,12 +625,52 @@ body {
     display: block;
 }
 
+/* 页脚样式 */
+footer {
+    text-align: center;
+    padding: 15px 0 20px;
+    margin-top: 15px;
+    border-top: 1px solid rgba(74, 158, 255, 0.2);
+    flex-shrink: 0;
+}
+
+footer p {
+    color: #a0a0c0;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.footer-notice {
+    color: #6a6a8a;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
 @media (max-width: 768px) {
     body {
         padding: 10px;
         overflow-y: auto;
         max-height: unset;
         overflow-x: hidden; /* 防止横向滚动条 */
+    }
+
+    footer {
+        margin-top: 15px;
+        padding: 15px 0;
+    }
+
+    footer p {
+        font-size: 0.8rem;
+    }
+
+    .footer-notice {
+        font-size: 0.7rem;
+        margin-bottom: 10px;
+        padding: 0 15px;
+        white-space: normal;
+        max-width: 100%;
     }
 
     .header {
@@ -775,5 +825,21 @@ body {
         right: calc(10px + 70px + 12px);
         bottom: 10px; /* 输入框padding-bottom为10px */
         font-size: 0.7rem;
+    }
+
+    footer {
+        margin-top: 10px;
+        padding: 10px 0;
+    }
+
+    footer p {
+        font-size: 0.75rem;
+    }
+
+    .footer-notice {
+        font-size: 0.65rem;
+        margin-bottom: 8px;
+        padding: 0 10px;
+        white-space: normal;
     }
 }
