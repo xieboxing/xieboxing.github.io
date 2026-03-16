@@ -425,6 +425,10 @@ function addUserMessage(content) {
  * @param {object|null} action - action对象，用于渲染操作方块
  */
 function addBotMessage(content, isStreaming = false, action = null) {
+    /* 判断是否为「无文本仅action」场景：内容为空（或仅空白字符）且存在action */
+    const isEmptyContent = !content || content.trim() === '';
+    const hasActionOnly = isEmptyContent && action;
+
     if (!isStreaming || !currentBotMessageElement) {
         // 新建消息
         const messageDiv = $('<div class="message bot-message"></div>');
@@ -432,6 +436,13 @@ function addBotMessage(content, isStreaming = false, action = null) {
         const bubble = $('<div class="message-bubble bot-bubble"></div>').text(content);
         // 创建气泡容器：垂直排列文本和action方块
         const bubbleContainer = $('<div class="message-bubble-container"></div>');
+
+        /* 【UI优化】无文本仅action场景：隐藏空的消息气泡，避免UI空白占位 */
+        if (hasActionOnly) {
+            // 为气泡添加隐藏类，不占用空间
+            bubble.addClass('bubble-hidden');
+        }
+
         /* 【强制修复渲染顺序】先插入return_text文本节点，确保文本在上 */
         bubbleContainer.append(bubble);
         messageDiv.append(avatar).append(bubbleContainer);

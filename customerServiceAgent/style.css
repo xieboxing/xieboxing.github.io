@@ -187,6 +187,12 @@ body {
     order: 1;
 }
 
+/* 【UI优化】无文本仅action场景：隐藏空的消息气泡，避免UI空白占位 */
+.bubble-hidden {
+    display: none !important;
+    /* 完全隐藏，不占用任何空间 */
+}
+
 /* 加载状态区 - 固定高度，不被挤压（模板样式，隐藏） */
 .loading-container {
     text-align: center;
@@ -679,15 +685,16 @@ body {
 
 /* ===================== 移动端适配（768px以下） ===================== */
 @media (max-width: 768px) {
-    /* 移动端按钮容器：只显示第一个按钮，居中显示 */
+    /* 移动端按钮容器：显示前2个按钮 */
     .quick-guide-container {
         gap: 10px;
         padding: 10px;
         margin-bottom: 8px;
+        /* 允许按钮换行，适应较小屏幕 */
+        flex-wrap: wrap;
     }
 
-    /* 移动端隐藏第2、3个按钮，只显示第1个 */
-    .quick-guide-btn:nth-child(2),
+    /* 移动端隐藏第3个按钮，只显示前2个 */
     .quick-guide-btn:nth-child(3) {
         display: none;
     }
@@ -701,6 +708,8 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
+        /* 允许按钮自适应宽度 */
+        flex: 0 1 auto;
     }
 }
 
@@ -709,10 +718,11 @@ body {
     .quick-guide-container {
         padding: 8px;
         margin-bottom: 6px;
+        gap: 8px;
     }
 
     .quick-guide-btn {
-        padding: 8px 16px;
+        padding: 8px 14px;
         font-size: 0.8rem;
         min-height: 40px;
     }
