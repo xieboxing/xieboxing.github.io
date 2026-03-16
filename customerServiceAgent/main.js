@@ -340,6 +340,38 @@ $(document).ready(function() {
 
     // 初始化日志
     log('Agent已启动，若token超过使用次数上限/已失效，请联系大星获取新的token');
+
+    /* ===================== 快速问题引导按钮功能（新增） ===================== */
+    /**
+     * 隐藏快速引导按钮组
+     * 用户点击任意引导按钮或手动发送消息后调用
+     */
+    function hideQuickGuide() {
+        $('#quickGuideContainer').addClass('hidden');
+    }
+
+    /**
+     * 快速引导按钮点击事件
+     * 点击后将按钮文案填入输入框并自动触发发送
+     */
+    $('#quickGuideContainer').on('click', '.quick-guide-btn', function() {
+        const $btn = $(this);
+        const text = $btn.data('text') || $btn.text();
+
+        // 将按钮文案填入输入框
+        const $chatInput = $('#chatInput');
+        $chatInput.val(text);
+
+        // 触发input事件以更新字符计数显示
+        $chatInput.trigger('input');
+
+        // 隐藏快速引导按钮组
+        hideQuickGuide();
+
+        // 自动触发发送
+        sendMessage();
+    });
+    /* ===================== 快速引导按钮功能结束 ===================== */
 });
 
 /**
@@ -536,6 +568,9 @@ async function sendMessage() {
         log('正在处理上一条消息，请稍候');
         return;
     }
+
+    /* 用户发送消息后，隐藏快速引导按钮组（新增） */
+    $('#quickGuideContainer').addClass('hidden');
 
     /* ===================== 敏感词检测（用户输入） ===================== */
     // 调用judgeMessage检测用户输入是否包含敏感词

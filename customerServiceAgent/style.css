@@ -625,7 +625,100 @@ body {
     display: block;
 }
 
-/* 页脚样式 */
+/* ===================== 快速问题引导按钮样式（新增功能） ===================== */
+/* 快速引导按钮容器：位于消息展示区和输入框之间 */
+.quick-guide-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    /* 与页面科技风主题一致的背景 */
+    background: rgba(30, 30, 60, 0.4);
+    border-radius: 8px;
+    /* 初始显示，用户发送消息后隐藏 */
+}
+
+/* 快速引导按钮基础样式 */
+.quick-guide-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(74, 158, 255, 0.5);
+    background: linear-gradient(135deg, rgba(74, 158, 255, 0.15), rgba(45, 125, 210, 0.15));
+    color: #a0d0ff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    text-align: center;
+    /* 轻微发光效果 */
+    box-shadow: 0 0 8px rgba(74, 158, 255, 0.2);
+}
+
+/* hover 态：增强发光和颜色 */
+.quick-guide-btn:hover {
+    background: linear-gradient(135deg, rgba(74, 158, 255, 0.3), rgba(45, 125, 210, 0.3));
+    border-color: #4a9eff;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* 点击/激活态：按下效果 */
+.quick-guide-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.4);
+    background: linear-gradient(135deg, rgba(74, 158, 255, 0.4), rgba(45, 125, 210, 0.4));
+}
+
+/* 隐藏状态 */
+.quick-guide-container.hidden {
+    display: none;
+}
+
+/* ===================== 移动端适配（768px以下） ===================== */
+@media (max-width: 768px) {
+    /* 移动端按钮容器：只显示第一个按钮，居中显示 */
+    .quick-guide-container {
+        gap: 10px;
+        padding: 10px;
+        margin-bottom: 8px;
+    }
+
+    /* 移动端隐藏第2、3个按钮，只显示第1个 */
+    .quick-guide-btn:nth-child(2),
+    .quick-guide-btn:nth-child(3) {
+        display: none;
+    }
+
+    /* 移动端按钮样式调整 */
+    .quick-guide-btn {
+        padding: 10px 18px;
+        font-size: 0.85rem;
+        /* 增大点击区域 */
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ===================== 小屏幕手机适配（480px以下） ===================== */
+@media (max-width: 480px) {
+    .quick-guide-container {
+        padding: 8px;
+        margin-bottom: 6px;
+    }
+
+    .quick-guide-btn {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        min-height: 40px;
+    }
+}
+
+/* ===================== 页脚样式 ===================== */
 footer {
     text-align: center;
     padding: 15px 0 20px;
