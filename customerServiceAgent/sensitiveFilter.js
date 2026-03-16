@@ -211,12 +211,17 @@ function filterApiResponse(content) {
     // 记录需要替换为*的字符位置（只替换敏感词字符，不替换标点符号）
     var charsToReplace = [];
 
+    // 记录匹配到的敏感词（用于日志输出）
+    var matchedSensitiveWords = [];
+
     // 遍历文本，查找所有敏感词
     for (var i = 0; i < content.length; i++) {
         var currentNode = tree;
         var j = i;
         // 记录匹配过程中的敏感词字符位置（不含跳过的标点符号）
         var matchedPositions = [];
+        // 记录匹配的敏感词原始字符（不含标点符号）
+        var matchedChars = [];
 
         // 从当前位置开始，逐字符匹配敏感词树
         while (j < content.length) {
@@ -232,26 +237,47 @@ function filterApiResponse(content) {
             if (currentNode[char]) {
                 currentNode = currentNode[char];
                 matchedPositions.push(j); // 记录敏感词字符位置
+                matchedChars.push(char); // 记录敏感词字符
                 j++;
 
-                // 如果匹配到敏感词结尾，标记这些位置需要替换
-                if (currentNode.isEnd === true) {
-                    for (var k = 0; k < matchedPositions.length; k++) {
-                        if (charsToReplace.indexOf(matchedPositions[k]) === -1) {
-                            charsToReplace.push(matchedPositions[k]);
-                        }
-                    }
-                }
+                // 【调试】打印匹配过程
+                // console.log('[调试] 匹配中:', matchedChars.join(''), 'isEnd:', currentNode.isEnd);
             } else {
                 // 当前字符不在树中，终止当前匹配
                 break;
             }
+        }
+
+        // 【关键修复】只有在 isEnd === true 时才标记为敏感词（完整匹配）
+        if (matchedPositions.length > 0 && currentNode.isEnd === true) {
+            for (var k = 0; k < matchedPositions.length; k++) {
+                if (charsToReplace.indexOf(matchedPositions[k]) === -1) {
+                    charsToReplace.push(matchedPositions[k]);
+                }
+            }
+            // 记录匹配到的敏感词（用于日志输出）
+            var matchedWord = matchedChars.join('');
+            if (matchedSensitiveWords.indexOf(matchedWord) === -1) {
+                matchedSensitiveWords.push(matchedWord);
+            }
+            // 【调试】打印匹配到的敏感词
+            console.log('[敏感词过滤] 完整匹配敏感词:', matchedWord, '位置:', i, '-', j);
         }
     }
 
     // 如果没有匹配到敏感词，直接返回原内容
     if (charsToReplace.length === 0) {
         return content;
+    }
+
+    // 在日志中打印被过滤的敏感词
+    if (matchedSensitiveWords.length > 0) {
+        // 优先使用main.js中的log函数，否则使用console.log
+        if (typeof log === 'function') {
+            log('API返回内容包含敏感词：【' + matchedSensitiveWords.join('、') + '】，已过滤');
+        } else {
+            console.log('[敏感词过滤] API返回内容包含敏感词：【' + matchedSensitiveWords.join('、') + '】，已过滤');
+        }
     }
 
     // 按位置排序，便于逐字符替换

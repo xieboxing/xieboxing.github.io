@@ -782,7 +782,7 @@ async function sendMessage() {
                     const action = extractAction(item);
                     /* ===================== 敏感词过滤（API返回内容） ===================== */
                     // 对API返回内容进行敏感词过滤
-                    const filteredContent = (typeof filterMessage === 'function') ? filterMessage(content) : content;
+                    const filteredContent = (typeof filterApiResponse === 'function') ? filterApiResponse(content) : content;
                     /* ===================== 敏感词过滤结束 ===================== */
                     // 组合QR和内容作为一条消息
                     const messageContent = `${i + 1}. ${qr}\n${filteredContent}`;
