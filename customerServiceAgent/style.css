@@ -497,6 +497,162 @@ body {
     color: #e0e0ff;
 }
 
+/* ===================== 自动测评模块样式（新增功能） ===================== */
+/* 自动测评模块容器 - 与日志模块样式统一 */
+.config-item.evaluation-box {
+    background: rgba(20, 20, 40, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #4a9eff;
+    box-shadow: 0 0 15px rgba(74, 158, 255, 0.3), 0 0 25px rgba(74, 158, 255, 0.2);
+    position: relative;
+    z-index: 10;
+    overflow: visible;
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* 控件行容器 - 横向排布 */
+.evaluation-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.evaluation-row:last-child {
+    margin-bottom: 0;
+}
+
+/* 自动测评按钮样式 - 与发送按钮风格统一 */
+.evaluation-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #4a9eff, #2d7dd2);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.4);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.evaluation-btn:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(74, 158, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+.evaluation-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* 测评中状态 - 带加载动画 */
+.evaluation-btn.evaluating {
+    background: linear-gradient(135deg, #ff8c42, #ff6b35);
+}
+
+/* 测评完成状态 - 置灰不可点击 */
+.evaluation-btn.completed {
+    background: #3a3a5a;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* 加载中动画图标 */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 0.8s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 同时测评数下拉框样式 - 与页面科技风统一 */
+.concurrency-select {
+    flex: 0 0 auto;
+    min-width: 120px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #4a9eff;
+    background: rgba(30, 30, 60, 0.8);
+    color: #ffffff;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px rgba(74, 158, 255, 0.2);
+    outline: none;
+    appearance: none;
+    /* 自定义下拉箭头 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a9eff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 35px;
+}
+
+.concurrency-select:hover:not(:disabled) {
+    border-color: #6bb3ff;
+    box-shadow: 0 0 15px rgba(74, 158, 255, 0.4);
+}
+
+.concurrency-select:focus {
+    border-color: #6bb3ff;
+    box-shadow: 0 0 15px rgba(74, 158, 255, 0.6);
+}
+
+.concurrency-select:disabled {
+    background: #3a3a5a;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.concurrency-select option {
+    background: #1a1a3e;
+    color: #ffffff;
+    padding: 10px;
+}
+
+/* 下载测评结果按钮样式 - 与自动测评按钮风格统一 */
+.download-btn {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #4a9eff, #2d7dd2);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.4);
+    min-height: 44px;
+}
+
+.download-btn:hover {
+    box-shadow: 0 0 20px rgba(74, 158, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+.download-btn:active {
+    transform: translateY(0);
+}
+
 /* 滚动条样式统一优化 */
 ::-webkit-scrollbar {
     width: 8px;
@@ -685,6 +841,23 @@ body {
 
 /* ===================== 移动端适配（768px以下） ===================== */
 @media (max-width: 768px) {
+    /* 自动测评模块移动端适配 - 改为纵向排布 */
+    .evaluation-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .evaluation-btn,
+    .download-btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .concurrency-select {
+        width: 100%;
+        min-width: unset;
+    }
+
     /* 移动端按钮容器：显示前2个按钮 */
     .quick-guide-container {
         gap: 10px;

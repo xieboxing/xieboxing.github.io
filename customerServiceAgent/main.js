@@ -12,6 +12,13 @@ const WORKFLOW_ID = '7617784508758605851'; // 固定工作流ID
 /* 初始化history数组，用于存储最近10轮对话 */
 let history = [];
 
+/* ===================== 自动测评功能状态变量 ===================== */
+let isEvaluating = false; // 是否正在测评中
+let evaluationCompleted = false; // 测评是否已完成
+let evaluationQuestions = []; // 测评问题列表
+let currentQuestionIndex = 0; // 当前测评问题索引（支持断点续测）
+let evaluationStopped = false; // 测评是否被手动停止
+
 /* ===================== 聊天记录上下文管理功能 ===================== */
 /**
  * 将用户消息添加到history数组（全量保留用户输入内容）
@@ -408,6 +415,296 @@ $(document).ready(function() {
         sendMessage();
     });
     /* ===================== 快速引导按钮功能结束 ===================== */
+
+    /* ===================== 自动测评功能（新增） ===================== */
+    /**
+     * 初始化测评问题列表
+     * 从全局变量 EvaluationArr 中读取测评问题
+     */
+    function initEvaluationQuestions() {
+        try {
+            if (typeof EvaluationArr !== 'undefined' && EvaluationArr.Evaluation && Array.isArray(EvaluationArr.Evaluation)) {
+                evaluationQuestions = EvaluationArr.Evaluation.map(item => item.question);
+                log(`测评问题列表加载成功，共 ${evaluationQuestions.length} 个问题`);
+                return true;
+            } else {
+                log('测评问题列表格式错误或为空');
+                return false;
+            }
+        } catch (error) {
+            log(`加载测评问题列表失败: ${error.message}`);
+            return false;
+        }
+    }
+
+    /**
+     * 更新测评按钮状态
+     * @param {string} state - 状态: 'idle'初始, 'evaluating'测评中, 'completed'已完成
+     */
+    function updateEvaluationButtonState(state) {
+        const $btn = $('#evaluationBtn');
+        const $select = $('#concurrencySelect');
+
+        // 移除所有状态类
+        $btn.removeClass('evaluating completed');
+
+        switch (state) {
+            case 'evaluating':
+                // 测评中状态
+                $btn.addClass('evaluating');
+                $btn.html('测评中，点击停止 <span class="loading-spinner"></span>');
+                $select.prop('disabled', true); // 禁用下拉框
+                break;
+            case 'completed':
+                // 完成状态
+                $btn.addClass('completed');
+                $btn.text('测评已完成');
+                $btn.prop('disabled', true); // 禁用按钮
+                $select.prop('disabled', true); // 禁用下拉框
+                evaluationCompleted = true;
+                break;
+            default:
+                // 初始状态
+                $btn.text('自动测评');
+                $btn.prop('disabled', false);
+                $select.prop('disabled', false);
+        }
+    }
+
+    /**
+     * 执行一批测评问题
+     * 将多个问题用空格连接后一次性发送
+     * @param {number} startIndex - 起始问题索引
+     * @param {number} count - 本次发送的问题数量
+     * @returns {Promise} 测评完成的Promise
+     */
+    function executeBatchEvaluation(startIndex, count) {
+        return new Promise((resolve) => {
+            // 检查是否被停止
+            if (evaluationStopped) {
+                resolve({ stopped: true });
+                return;
+            }
+
+            // 获取本次要发送的问题
+            const batchQuestions = [];
+            for (let i = 0; i < count && (startIndex + i) < evaluationQuestions.length; i++) {
+                batchQuestions.push(evaluationQuestions[startIndex + i]);
+            }
+
+            if (batchQuestions.length === 0) {
+                resolve({ completed: true });
+                return;
+            }
+
+            // 将多个问题用空格连接成一个字符串
+            const combinedQuestion = batchQuestions.join(' ');
+            const endIndex = startIndex + batchQuestions.length - 1;
+
+            log(`[测评进度: 第${startIndex + 1}-${endIndex + 1}个问题，共${batchQuestions.length}个问题合并发送]`);
+            log(`合并内容: ${combinedQuestion.substring(0, 100)}${combinedQuestion.length > 100 ? '...' : ''}`);
+
+            // 模拟用户输入问题到聊天框
+            const $chatInput = $('#chatInput');
+            $chatInput.val(combinedQuestion);
+            $chatInput.trigger('input'); // 触发input事件更新字符计数
+
+            // 短暂延迟后触发发送（模拟真实操作）
+            setTimeout(() => {
+                // 检查是否被停止
+                if (evaluationStopped) {
+                    resolve({ stopped: true });
+                    return;
+                }
+
+                // 调用发送消息函数
+                // sendMessage内部会自动处理：
+                // 1. 设置 isLoading = true
+                // 2. 禁用输入框和发送按钮
+                // 3. 显示用户消息到聊天框
+                // 4. 显示加载状态 (showLoading)
+                // 5. 发送请求并接收响应
+                // 6. 隐藏加载状态 (hideLoading)
+                // 7. 设置 isLoading = false
+                // 8. 恢复输入框和发送按钮可用
+                sendMessage();
+
+                // 延迟一小段时间后开始轮询，确保sendMessage已经设置了isLoading
+                setTimeout(() => {
+                    // 轮询等待消息发送完成（isLoading 变为 false）
+                    const checkInterval = setInterval(() => {
+                        if (evaluationStopped) {
+                            // 用户停止测评
+                            clearInterval(checkInterval);
+                            resolve({ stopped: true });
+                            return;
+                        }
+
+                        if (!isLoading) {
+                            // 消息发送完成，loading状态已消失，按钮已恢复
+                            clearInterval(checkInterval);
+                            log(`[测评进度: 第${startIndex + 1}-${endIndex + 1}个问题] 执行完成`);
+                            resolve({ success: true, count: batchQuestions.length });
+                        }
+                    }, 200); // 每200ms检查一次，响应更及时
+                }, 100);
+            }, 500);
+        });
+    }
+
+    /**
+     * 开始自动测评
+     * 按照选中的问题数量，分批发送测评问题
+     */
+    async function startEvaluation() {
+        // 获取每次合并发送的问题数量
+        const batchSize = parseInt($('#concurrencySelect').val(), 10);
+        const totalQuestions = evaluationQuestions.length;
+
+        log(`开始自动测评，每次发送${batchSize}个问题，共${totalQuestions}个问题`);
+        updateEvaluationButtonState('evaluating');
+
+        // 分批发送
+        while (currentQuestionIndex < totalQuestions && !evaluationStopped) {
+            const startIndex = currentQuestionIndex;
+            const result = await executeBatchEvaluation(startIndex, batchSize);
+
+            if (evaluationStopped) {
+                // 用户手动停止
+                break;
+            }
+
+            // 更新当前索引（无论成功失败都前进）
+            currentQuestionIndex += batchSize;
+        }
+
+        // 检查是否全部完成
+        if (!evaluationStopped && currentQuestionIndex >= totalQuestions) {
+            log(`测评全部完成，共执行 ${totalQuestions} 个问题`);
+            updateEvaluationButtonState('completed');
+        } else if (evaluationStopped) {
+            // 用户手动停止
+            log(`测评已停止，已完成 ${Math.min(currentQuestionIndex, totalQuestions)}/${totalQuestions} 个问题`);
+            log('再次点击「自动测评」可继续执行剩余问题');
+            updateEvaluationButtonState('idle');
+        }
+    }
+
+    /**
+     * 开始/停止自动测评
+     */
+    async function toggleEvaluation() {
+        if (isEvaluating) {
+            // 正在测评中，点击停止
+            evaluationStopped = true;
+            log('用户点击停止，正在终止测评任务...');
+            updateEvaluationButtonState('idle');
+            isEvaluating = false;
+            return;
+        }
+
+        if (evaluationCompleted) {
+            // 已完成状态，不再允许点击
+            return;
+        }
+
+        // 开始测评
+        // 如果是断点续测，currentQuestionIndex 已经保留了上次的进度
+        if (currentQuestionIndex === 0) {
+            // 全新开始，初始化问题列表
+            if (!initEvaluationQuestions()) {
+                log('无法加载测评问题列表，测评终止');
+                return;
+            }
+        }
+
+        isEvaluating = true;
+        evaluationStopped = false;
+        log(`开始自动测评，从第 ${currentQuestionIndex + 1} 个问题开始`);
+
+        try {
+            await startEvaluation();
+        } catch (error) {
+            log(`测评过程出错: ${error.message}`);
+        } finally {
+            isEvaluating = false;
+        }
+    }
+
+    /**
+     * 下载测评结果
+     * 提取聊天框内的所有聊天记录，生成TXT文件下载
+     */
+    function downloadEvaluationResults() {
+        const $messagesContainer = $('#messagesContainer');
+        const $messages = $messagesContainer.find('.message');
+
+        // 检查是否有聊天记录
+        if ($messages.length === 0) {
+            log('暂无聊天记录可下载');
+            return;
+        }
+
+        // 收集聊天记录
+        const chatRecords = [];
+        $messages.each(function() {
+            const $msg = $(this);
+            const isUser = $msg.hasClass('user-message');
+            const role = isUser ? '用户消息' : 'AI回复';
+            const $bubble = $msg.find('.message-bubble');
+            const content = $bubble.text().trim();
+
+            // 获取时间
+            const now = new Date();
+            const timeStr = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+
+            chatRecords.push(`【${role}】 ${timeStr}\n${content}\n`);
+        });
+
+        // 生成文件内容
+        const fileContent = chatRecords.join('\n' + '-'.repeat(50) + '\n\n');
+
+        // 生成文件名
+        const now = new Date();
+        const fileName = `ChuangZaoAI客服测评结果_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.txt`;
+
+        // 创建Blob并下载
+        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        // 创建下载链接
+        const $downloadLink = $('<a></a>')
+            .attr('href', url)
+            .attr('download', fileName)
+            .css('display', 'none');
+
+        $('body').append($downloadLink);
+        $downloadLink[0].click();
+
+        // 清理
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+            $downloadLink.remove();
+        }, 100);
+
+        log(`测评结果已下载: ${fileName}`);
+    }
+
+    // 绑定自动测评按钮点击事件
+    $('#evaluationBtn').on('click', toggleEvaluation);
+
+    // 绑定下载按钮点击事件
+    $('#downloadBtn').on('click', downloadEvaluationResults);
+
+    /* ===================== 自动测评功能结束 ===================== */
 });
 
 /**

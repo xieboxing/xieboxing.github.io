@@ -78,6 +78,23 @@
                 <h3 class="config-title">前端操作日志</h3>
                 <div class="logs-container" id="logsContainer"></div>
             </div>
+            <!-- 自动测评模块 -->
+            <div class="config-item evaluation-box">
+                <h3 class="config-title">自动测评</h3>
+                <!-- 第一行：自动测评按钮 + 同时测评数下拉框 -->
+                <div class="evaluation-row">
+                    <button class="evaluation-btn" id="evaluationBtn">自动测评</button>
+                    <select class="concurrency-select" id="concurrencySelect">
+                        <option value="1">同时测1个</option>
+                        <option value="3">同时测3个</option>
+                        <option value="5">同时测5个</option>
+                    </select>
+                </div>
+                <!-- 第二行：下载测评结果按钮 -->
+                <div class="evaluation-row">
+                    <button class="download-btn" id="downloadBtn">下载测评结果</button>
+                </div>
+            </div>
         </section>
     </main>
 
@@ -88,6 +105,8 @@
 
     <!-- 为了节省后端资源，暂时引入敏感词过滤模块 -->
     <script src="sensitiveFilter.js"></script>
+    <!-- 引入测评问题列表 -->
+    <script src="evaluation.js"></script>
     <!-- 引入自定义 JS -->
     <script src="main.js?v=20260315"></script>
 </body>
